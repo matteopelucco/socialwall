@@ -28,7 +28,8 @@ The codebase stays clean and reusable across future events.
 ```
 socialwall/
 ├── config/
-│   └── event.ts            ← ALL event-specific config lives here
+│   ├── event.ts            ← ALL event-specific config lives here
+│   └── qr.svg              ← QR image to display on wall
 ├── app/
 │   ├── page.tsx            ← redirects to /quiz
 │   ├── layout.tsx          ← global fonts, metadata, theme CSS vars
@@ -165,11 +166,34 @@ Realtime enabled on: `dediche`, `typing_status`, `sessions`
 
 ---
 
+## Admin panel (/admin)
+
+Password-protected moderation page for live event management.
+
+**Route**: `/admin`  
+**Auth**: client-side password check against `NEXT_PUBLIC_ADMIN_PASSWORD`, stored in `sessionStorage` (cleared on tab close).
+
+**Features**:
+- Lists all dediche (most recent first), updates in realtime via Supabase
+- **Edit**: inline textarea to fix/clean a message, saves to Supabase
+- **Delete**: two-step confirmation (no accidental deletes), removes from DB and wall instantly
+- Polling fallback every 10s for missed events
+
+**Implementation notes**:
+- Single file: `app/admin/page.tsx` (client component)
+- Supabase helpers: `getAllDediche()`, `updateDedica(id, testo)`, `deleteDedica(id)` in `lib/supabase.ts`
+- No server-side auth — suitable for local event (anon key is already public)
+- Desktop-optimized but works on mobile
+
+---
+
 ## Environment variables
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_DEDICA_ENABLED=true        # set "false" to disable dedica form
+NEXT_PUBLIC_ADMIN_PASSWORD=            # password for /admin panel
 ```
 
 ---

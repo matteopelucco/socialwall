@@ -123,3 +123,30 @@ export async function getActiveTyping(): Promise<TypingStatus[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+// ── Admin helpers ──────────────────────────────────────────────
+
+export async function getAllDediche(): Promise<Dedica[]> {
+  const { data, error } = await supabase
+    .from("dediche")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateDedica(id: string, testo: string): Promise<void> {
+  const { error } = await supabase
+    .from("dediche")
+    .update({ testo })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteDedica(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("dediche")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
