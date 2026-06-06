@@ -29,7 +29,7 @@ The codebase stays clean and reusable across future events.
 socialwall/
 ├── config/
 │   ├── event.ts            ← ALL event-specific config lives here
-│   └── qr.svg              ← QR image to display on wall
+│   └── qr.png              ← QR image to display on wall
 ├── app/
 │   ├── page.tsx            ← redirects to /quiz
 │   ├── layout.tsx          ← global fonts, metadata, theme CSS vars

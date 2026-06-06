@@ -223,7 +223,7 @@ function Sidebar({
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/qr.svg"
+          src="/qr.png"
           alt="QR code"
           style={{ width: "100%", maxWidth: 160, height: "auto", borderRadius: 8, margin: "0 auto", display: "block" }}
         />
