@@ -55,9 +55,11 @@ html, body {
 
 .padlet-card::before {
   content: '';
-  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 5px;
-  width: 100%;
 }
 
 /* Card color variants — top strip + bg tint */
