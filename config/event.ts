@@ -132,8 +132,8 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 1,
       testo: "In quale città è cresciuto Don Samuele?",
-      opzioni: ["Mesenzana", "Varese", "Milano", "Luino"],
-      corretta: 0,
+      opzioni: ["Milano", "Varese", "Mesenzana", "Luino"],
+      corretta: 2,
       curiosita: "Mesenzana è sempre stata la sua casa ❤️",
     },
     {
@@ -146,8 +146,8 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 3,
       testo: "Quando è stata la sua Prima Messa?",
-      opzioni: ["14 Giugno 2026", "1 Gennaio 2026", "25 Aprile 2026", "8 Dicembre 2025"],
-      corretta: 0,
+      opzioni: ["1 Gennaio 2026", "25 Aprile 2026", "8 Dicembre 2025", "14 Giugno 2026"],
+      corretta: 3,
       curiosita: "Oggi stesso — un giorno da ricordare! 🎉",
     },
     {
@@ -160,15 +160,15 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 5,
       testo: "Come chiamava l'acqua da piccolo?",
-      opzioni: ["Dlà Dlà", "Acqua Acqua", "Glu Glu", "Bevi Bevi"],
-      corretta: 0,
+      opzioni: ["Acaa", "Glù Glù", "Dlà Dlà", "Tentazione nel deserto"],
+      corretta: 2,
       curiosita: "\"Dlà Dlà\" — una parola talmente bella che quasi dispiace non averla adottata tutti 💧",
     },
     {
       id: 6,
       testo: "Per quale squadra tifa Don Samuele?",
-      opzioni: ["Inter", "Milan", "Juventus", "Atalanta"],
-      corretta: 0,
+      opzioni: ["Milan", "Inter", "Juventus", "Atalanta"],
+      corretta: 1,
       curiosita: "Interista convinto! La fede calcistica è dura a morire... anche in seminario ⚫🔵",
     },
     {
@@ -176,15 +176,28 @@ export const EVENT_CONFIG: EventConfig = {
       testo: "Come si chiama la mamma di Don Samuele?",
       opzioni: ["Sara", "Maria", "Anna", "Elena"],
       corretta: 0,
-      curiosita: "Sara — un nome bellissimo, con una storia antica. ",
+      curiosita: "Sara — un nome bellissimo, con una storia antica. E non è finita qui.. 😂",
     },
     {
       id: 8,
       testo: "Come si chiama la nipote di Don Samuele?",
-      opzioni: ["Sara", "Sofia", "Giulia", "Emma"],
-      corretta: 0,
-      curiosita: "Anche lei Sara! In casa Brancè il nome porta bene... e fa confusione a tavola 😂",
+      opzioni: ["Sofia", "Giulia", "Sara", "Emma"],
+      corretta: 2,
+      curiosita: "Sara! In casa Brancè il nome porta bene... e fa confusione a tavola 😂",
     },
-    // ── ADD 2 MORE QUESTIONS HERE ──────────────────────────
+    {
+      id: 9,
+      testo: "Come si chiama il papà di Don Samuele?",
+      opzioni: ["Giacomo", "Salvatore", "Marco", "Silvio"],
+      corretta: 3,
+      curiosita: "Silvio! Evviva i papà! 👨‍🦳",
+    },
+    {
+      id: 10,
+      testo: "Di dove è originario Don Samuele?",
+      opzioni: ["Sicilia", "Lodi", "Cesenatico", "Castendallo"],
+      corretta: 3,
+      curiosita: "Nato a Mesenzana, ma le origini non si dimenticano! 🏠",
+    }
   ],
 };
