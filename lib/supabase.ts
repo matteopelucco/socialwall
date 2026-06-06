@@ -44,11 +44,12 @@ import type { Session, Dedica, TypingStatus, LeaderboardEntry } from "./types";
 export async function createSession(
   nome: string,
   punteggio: number,
-  totale_domande: number
+  totale_domande: number,
+  tempo_secondi: number
 ): Promise<Session> {
   const { data, error } = await supabase
     .from("sessions")
-    .insert({ nome, punteggio, totale_domande })
+    .insert({ nome, punteggio, totale_domande, tempo_secondi })
     .select()
     .single();
   if (error) throw error;

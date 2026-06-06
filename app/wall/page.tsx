@@ -10,7 +10,7 @@ import {
   getTotalParticipants,
   getActiveTyping,
 } from "@/lib/supabase";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, formatTime } from "@/lib/utils";
 import type { Dedica, LeaderboardEntry, TypingStatus } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -174,16 +174,24 @@ function Sidebar({
               >
                 {e.nome}
               </span>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: i === 0 ? "var(--color-secondary)" : "var(--color-text-muted)",
-                }}
-              >
-                {e.punteggio}/{e.totale_domande}
-              </span>
+              <div style={{ textAlign: "right" }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: i === 0 ? "var(--color-secondary)" : "var(--color-text-muted)",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {e.punteggio}/{e.totale_domande}
+                </div>
+                {e.tempo_secondi > 0 && (
+                  <div style={{ fontSize: 10, color: "var(--color-text-muted)", lineHeight: 1.2 }}>
+                    {formatTime(e.tempo_secondi)}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

@@ -5,6 +5,7 @@ export type Session = {
   nome: string;
   punteggio: number;
   totale_domande: number;
+  tempo_secondi: number;
   created_at: string;
 };
 
@@ -27,6 +28,7 @@ export type LeaderboardEntry = {
   nome: string;
   punteggio: number;
   totale_domande: number;
+  tempo_secondi: number;
   percentuale: number;
   created_at: string;
 };

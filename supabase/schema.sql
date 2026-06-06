@@ -9,8 +9,12 @@ create table if not exists sessions (
   nome            text not null,
   punteggio       integer not null default 0,
   totale_domande  integer not null default 10,
+  tempo_secondi   integer not null default 0,
   created_at      timestamptz not null default now()
 );
+
+-- Migration for existing DB (safe to run multiple times)
+alter table sessions add column if not exists tempo_secondi integer not null default 0;
 
 -- Dediche: messages left by guests
 create table if not exists dediche (
@@ -77,8 +81,9 @@ create or replace view leaderboard as
     nome,
     punteggio,
     totale_domande,
+    tempo_secondi,
     created_at,
     round(punteggio::numeric / totale_domande * 100) as percentuale
   from sessions
-  order by punteggio desc, created_at asc
+  order by punteggio desc, tempo_secondi asc, created_at asc
   limit 10;

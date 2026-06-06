@@ -3,7 +3,7 @@
 // app/quiz/page.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
 import { EVENT_CONFIG, AVATAR_COLORS, type Question } from "@/config/event";
-import { pickQuestions, getScoreMessage, generateTempId } from "@/lib/utils";
+import { pickQuestions, getScoreMessage, getTimeMessage, formatTime, generateTempId } from "@/lib/utils";
 import {
   createSession,
   createDedica,
@@ -112,6 +112,7 @@ function QuestionCard({
   onAnswer,
   answered,
   selectedIndex,
+  elapsedDisplay,
 }: {
   question: Question;
   index: number;
@@ -119,6 +120,7 @@ function QuestionCard({
   onAnswer: (idx: number) => void;
   answered: boolean;
   selectedIndex: number | null;
+  elapsedDisplay: number;
 }) {
   const getOptionClass = (idx: number) => {
     if (!answered) return OPTION_CARD_CLASSES[idx];
@@ -141,6 +143,20 @@ function QuestionCard({
             }}
           >
             {index + 1} / {total}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 15,
+              fontWeight: 800,
+              color: "var(--color-text-muted)",
+              background: "rgba(0,0,0,0.05)",
+              borderRadius: 100,
+              padding: "2px 12px",
+              letterSpacing: "0.04em",
+            }}
+          >
+            ⏱ {formatTime(elapsedDisplay)}
           </span>
           <div className="flex gap-1">
             {Array.from({ length: total }).map((_, i) => (
@@ -241,6 +257,7 @@ function ScoreScreen({
   answers,
   onContinue,
   dedicaEnabled,
+  tempoSecondi,
 }: {
   score: number;
   total: number;
@@ -248,9 +265,11 @@ function ScoreScreen({
   answers: (number | null)[];
   onContinue: () => void;
   dedicaEnabled: boolean;
+  tempoSecondi: number;
 }) {
   const [showDetails, setShowDetails] = useState(false);
   const message = getScoreMessage(score, EVENT_CONFIG.scoreMessages);
+  const timeMessage = getTimeMessage(tempoSecondi, EVENT_CONFIG.timeMessages);
   const pct = Math.round((score / total) * 100);
   const cardClass = pct >= 80 ? "card-green" : pct >= 50 ? "card-amber" : "card-pink";
 
@@ -283,6 +302,21 @@ function ScoreScreen({
           <p style={{ fontWeight: 600, color: "var(--color-text)", marginTop: 12, fontSize: 16 }}>
             {message}
           </p>
+        </div>
+
+        {/* Time card */}
+        <div className="padlet-card card-cyan p-4 mb-3 flex items-center justify-between">
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", margin: "0 0 2px" }}>
+              Tempo impiegato
+            </p>
+            <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0 }}>
+              {timeMessage}
+            </p>
+          </div>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 900, color: "var(--color-text)", letterSpacing: "0.04em" }}>
+            {formatTime(tempoSecondi)}
+          </span>
         </div>
 
         <button
@@ -511,12 +545,28 @@ export default function QuizPage() {
   const [score, setScore] = useState(0);
   const [sessionId, setSessionId] = useState("");
 
+  // Timer
+  const quizStartRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [elapsedDisplay, setElapsedDisplay] = useState(0);
+  const [finalTime, setFinalTime] = useState(0);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
   const handleStart = useCallback((name: string) => {
     const picked = pickQuestions(EVENT_CONFIG.questions, EVENT_CONFIG.questionsPerSession);
     setUserName(name);
     setQuestions(picked);
     setAnswers(new Array(picked.length).fill(null));
     setSessionId(generateTempId());
+    // Start timer
+    quizStartRef.current = Date.now();
+    setElapsedDisplay(0);
+    timerRef.current = setInterval(() => {
+      setElapsedDisplay(Math.floor((Date.now() - quizStartRef.current!) / 1000));
+    }, 1000);
     setPhase("question");
   }, []);
 
@@ -539,7 +589,13 @@ export default function QuizPage() {
           setAnswered(false);
           setSelectedIndex(null);
         } else {
-          createSession(userName, newScore, questions.length).then((session) => {
+          // Stop timer and capture final time
+          if (timerRef.current) clearInterval(timerRef.current);
+          const elapsed = quizStartRef.current
+            ? Math.floor((Date.now() - quizStartRef.current) / 1000)
+            : 0;
+          setFinalTime(elapsed);
+          createSession(userName, newScore, questions.length, elapsed).then((session) => {
             setSessionId(session.id);
           });
           setPhase("score");
@@ -559,6 +615,7 @@ export default function QuizPage() {
         onAnswer={handleAnswer}
         answered={answered}
         selectedIndex={selectedIndex}
+        elapsedDisplay={elapsedDisplay}
       />
     );
   if (phase === "score")
@@ -570,6 +627,7 @@ export default function QuizPage() {
         answers={answers}
         onContinue={() => setPhase(dedicaEnabled ? "dedica" : "thankyou")}
         dedicaEnabled={dedicaEnabled}
+        tempoSecondi={finalTime}
       />
     );
   if (phase === "dedica")

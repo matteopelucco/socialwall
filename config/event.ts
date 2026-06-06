@@ -44,6 +44,7 @@ export type EventConfig = {
   wallSubtitle: string;
   dedicaPlaceholder: string;
   qrInviteText: string;
+  timeMessages: Record<number, string>;
   theme: EventTheme;
   questions: Question[];
 };
@@ -114,6 +115,15 @@ export const EVENT_CONFIG: EventConfig = {
   dedicaPlaceholder: "Scrivi il tuo messaggio a Don Samuele...",
   qrInviteText:      "Scansiona e partecipa al quiz!",
 
+  // ── Time feedback (keyed by max seconds, ascending) ────────
+  timeMessages: {
+    45:   "Fulmineo! ⚡ Meno di un minuto!",
+    90:   "Velocissimo! 🚀",
+    150:  "Ottimo ritmo! 🎯",
+    240:  "Con calma, con stile 😎",
+    9999: "La riflessione è una virtù! 🙏",
+  },
+
   // ── Theme ─────────────────────────────────────────────────
   theme: PADLET_THEME,
 
@@ -161,6 +171,20 @@ export const EVENT_CONFIG: EventConfig = {
       corretta: 0,
       curiosita: "Interista convinto! La fede calcistica è dura a morire... anche in seminario ⚫🔵",
     },
-    // ── ADD 4 MORE QUESTIONS HERE ──────────────────────────
+    {
+      id: 7,
+      testo: "Come si chiama la mamma di Don Samuele?",
+      opzioni: ["Sara", "Maria", "Anna", "Elena"],
+      corretta: 0,
+      curiosita: "Sara — un nome bellissimo, con una storia antica. ",
+    },
+    {
+      id: 8,
+      testo: "Come si chiama la nipote di Don Samuele?",
+      opzioni: ["Sara", "Sofia", "Giulia", "Emma"],
+      corretta: 0,
+      curiosita: "Anche lei Sara! In casa Brancè il nome porta bene... e fa confusione a tavola 😂",
+    },
+    // ── ADD 2 MORE QUESTIONS HERE ──────────────────────────
   ],
 };

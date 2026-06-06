@@ -51,6 +51,25 @@ export function truncate(text: string, max: number): string {
   return text.length <= max ? text : text.slice(0, max - 1) + "…";
 }
 
+/** Format elapsed seconds as M:SS */
+export function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+/** Get time feedback message (keyed by max seconds, ascending) */
+export function getTimeMessage(
+  seconds: number,
+  messages: Record<number, string>
+): string {
+  const thresholds = Object.keys(messages).map(Number).sort((a, b) => a - b);
+  for (const t of thresholds) {
+    if (seconds <= t) return messages[t];
+  }
+  return messages[thresholds[thresholds.length - 1]] ?? "";
+}
+
 /** Time ago in Italian */
 export function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
