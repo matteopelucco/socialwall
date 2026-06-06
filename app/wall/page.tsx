@@ -194,6 +194,32 @@ function Sidebar({
           </p>
         )}
       </div>
+
+      {/* QR panel */}
+      <div
+        className="rounded-2xl p-4 mt-auto"
+        style={{ background: "var(--color-surface2)", textAlign: "center" }}
+      >
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--color-text-muted)",
+            marginBottom: 10,
+            fontFamily: "var(--font-display)",
+          }}
+        >
+          {EVENT_CONFIG.qrInviteText}
+        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/qr.svg"
+          alt="QR code"
+          style={{ width: "100%", maxWidth: 160, height: "auto", borderRadius: 8, margin: "0 auto", display: "block" }}
+        />
+      </div>
     </div>
   );
 }

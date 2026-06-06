@@ -43,6 +43,7 @@ export type EventConfig = {
   wallTitle: string;
   wallSubtitle: string;
   dedicaPlaceholder: string;
+  qrInviteText: string;
   theme: EventTheme;
   questions: Question[];
 };
@@ -111,6 +112,7 @@ export const EVENT_CONFIG: EventConfig = {
   wallTitle:         "Muro dei Messaggi 💌",
   wallSubtitle:      "I tuoi auguri a Don Samuele",
   dedicaPlaceholder: "Scrivi il tuo messaggio a Don Samuele...",
+  qrInviteText:      "Scansiona e partecipa al quiz!",
 
   // ── Theme ─────────────────────────────────────────────────
   theme: PADLET_THEME,
@@ -138,6 +140,27 @@ export const EVENT_CONFIG: EventConfig = {
       corretta: 0,
       curiosita: "Oggi stesso — un giorno da ricordare! 🎉",
     },
-    // ── ADD 7 MORE QUESTIONS HERE ──────────────────────────
+    {
+      id: 4,
+      testo: "Quando è nato Don Samuele?",
+      opzioni: ["6 aprile 1999", "6 aprile 2001", "15 agosto 1998", "1 gennaio 2000"],
+      corretta: 0,
+      curiosita: "Un bambino di primavera! Forse è per questo che porta sempre un po' di sole con sé ☀️",
+    },
+    {
+      id: 5,
+      testo: "Come chiamava l'acqua da piccolo?",
+      opzioni: ["Dlà Dlà", "Acqua Acqua", "Glu Glu", "Bevi Bevi"],
+      corretta: 0,
+      curiosita: "\"Dlà Dlà\" — una parola talmente bella che quasi dispiace non averla adottata tutti 💧",
+    },
+    {
+      id: 6,
+      testo: "Per quale squadra tifa Don Samuele?",
+      opzioni: ["Inter", "Milan", "Juventus", "Atalanta"],
+      corretta: 0,
+      curiosita: "Interista convinto! La fede calcistica è dura a morire... anche in seminario ⚫🔵",
+    },
+    // ── ADD 4 MORE QUESTIONS HERE ──────────────────────────
   ],
 };
