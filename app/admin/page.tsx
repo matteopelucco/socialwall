@@ -16,6 +16,65 @@ import type { DedicaWithSession } from "@/lib/types";
 const AUTH_KEY = "sw_admin_authed";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 
+// ── PDF export ─────────────────────────────────────────────────────────
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/\n/g, "<br>");
+}
+
+function openPrintWindow(items: DedicaWithSession[]) {
+  const ordered = [...items].reverse(); // oldest first
+  const html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Messaggi per ${escapeHtml(EVENT_CONFIG.honoree)}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Nunito Sans',Georgia,serif;color:#1a1a2e;background:#fff;padding:48px 56px;max-width:760px;margin:0 auto}
+    .cover{text-align:center;padding-bottom:36px;margin-bottom:40px;border-bottom:3px solid #f06292}
+    .cover-emoji{font-size:48px;margin-bottom:16px}
+    .cover h1{font-family:'Nunito',sans-serif;font-size:30px;font-weight:900;color:#1a1a2e;margin-bottom:8px}
+    .cover .sub{font-size:15px;color:#9a96a8;margin-bottom:4px}
+    .cover .count{margin-top:16px;display:inline-block;background:#fff0f6;color:#f06292;font-size:13px;font-weight:700;padding:4px 16px;border-radius:100px}
+    .msg{margin-bottom:32px;padding:20px 24px 16px;border-left:4px solid #f06292;background:#fff8fb;page-break-inside:avoid;break-inside:avoid}
+    .msg-text{font-size:15px;line-height:1.75;color:#1a1a2e;margin-bottom:12px}
+    .msg-author{font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:#f06292;text-transform:uppercase;letter-spacing:0.1em}
+    .footer{margin-top:48px;text-align:center;font-size:12px;color:#c0bcc8;border-top:1px solid #f0ebe3;padding-top:20px}
+    @media print{body{padding:24px 32px}@page{margin:20mm}}
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <div class="cover-emoji">💌</div>
+    <h1>Messaggi per ${escapeHtml(EVENT_CONFIG.honoree)}</h1>
+    <p class="sub">${escapeHtml(EVENT_CONFIG.eventName)}</p>
+    <p class="sub">${escapeHtml(EVENT_CONFIG.eventSubtitle)}</p>
+    <span class="count">${ordered.length} messaggi ricevuti</span>
+  </div>
+  ${ordered.map((item) => `
+  <div class="msg">
+    <p class="msg-text">${escapeHtml(item.testo)}</p>
+    <p class="msg-author">— ${escapeHtml(item.nome_firma)}</p>
+  </div>`).join("")}
+  <div class="footer">${escapeHtml(EVENT_CONFIG.eventDate)}</div>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) { alert("Abilita i popup per questo sito per scaricare il PDF."); return; }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
 // ── Login ──────────────────────────────────────────────────────────────
 
 function LoginScreen({ onLogin }: { onLogin: (pw: string) => boolean }) {
@@ -294,6 +353,13 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => openPrintWindow(items)}
+            disabled={items.length === 0}
+            style={{ background: "rgba(52,192,114,0.1)", color: "#22a06b", border: "1.5px solid #86efac", borderRadius: 100, padding: "6px 16px", fontWeight: 700, fontSize: 13, cursor: items.length === 0 ? "not-allowed" : "pointer", opacity: items.length === 0 ? 0.5 : 1 }}
+          >
+            📄 Scarica PDF
+          </button>
           <button
             onClick={() => setShowDeleteAll((v) => !v)}
             style={{ background: showDeleteAll ? "#fed7d7" : "rgba(229,62,62,0.08)", color: "#c53030", border: "1.5px solid #feb2b2", borderRadius: 100, padding: "6px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
