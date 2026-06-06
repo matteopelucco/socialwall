@@ -8,12 +8,7 @@ export const metadata: Metadata = {
   description: EVENT_CONFIG.eventSubtitle,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Inject theme CSS vars from event config
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const themeVars = Object.entries(EVENT_CONFIG.theme)
     .map(([k, v]) => `${k}:${v}`)
     .join(";");
@@ -25,9 +20,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
       <body>{children}</body>
     </html>

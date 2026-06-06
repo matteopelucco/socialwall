@@ -2,7 +2,7 @@
 
 // app/wall/page.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
-import { EVENT_CONFIG } from "@/config/event";
+import { EVENT_CONFIG, CARD_ACCENT_COLORS, AVATAR_COLORS } from "@/config/event";
 import {
   supabase,
   getRecentDediche,
@@ -13,45 +13,83 @@ import {
 import { timeAgo } from "@/lib/utils";
 import type { Dedica, LeaderboardEntry, TypingStatus } from "@/lib/types";
 
-// ── DedicaCard ────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────
 
-const CARD_COLORS = [
-  "var(--color-primary)",
-  "var(--color-secondary)",
-  "var(--color-accent)",
-  "var(--color-accent2)",
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .slice(0, 2)
+    .join("");
+}
+
+function getColorIndex(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % AVATAR_COLORS.length;
+}
+
+const CARD_CLASSES = [
+  "card-amber",
+  "card-blue",
+  "card-green",
+  "card-pink",
+  "card-violet",
+  "card-cyan",
 ];
 
+// ── DedicaCard ─────────────────────────────────────────────────────
+
 function DedicaCard({ dedica, index }: { dedica: Dedica; index: number }) {
-  const color = CARD_COLORS[index % CARD_COLORS.length];
+  const cardClass = CARD_CLASSES[index % CARD_CLASSES.length];
+  const avatarColor = AVATAR_COLORS[getColorIndex(dedica.nome_firma)];
+  const initials = getInitials(dedica.nome_firma);
+
   return (
     <div
-      className="card-memphis p-5 animate-card-in shrink-0"
-      style={{
-        borderColor: color,
-        boxShadow: `5px 5px 0 ${color}`,
-        animationDelay: `${(index % 6) * 0.08}s`,
-      }}
+      className={`padlet-card ${cardClass} animate-card-in mb-3`}
+      style={{ animationDelay: `${Math.min(index, 8) * 0.06}s` }}
     >
-      <p className="text-text-main text-base leading-relaxed mb-4 line-clamp-4">
-        "{dedica.testo}"
-      </p>
-      <div className="flex items-center justify-between">
-        <span
-          className="font-display text-xl"
-          style={{ fontFamily: "var(--font-display)", color }}
+      <div className="p-4">
+        <p
+          className="text-sm leading-relaxed mb-3"
+          style={{
+            color: "var(--color-text)",
+            fontFamily: "var(--font-body)",
+            lineHeight: 1.65,
+          }}
         >
-          — {dedica.nome_firma}
-        </span>
-        <span className="text-text-muted text-xs">{timeAgo(dedica.created_at)}</span>
+          "{dedica.testo}"
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="avatar" style={{ background: avatarColor, width: 28, height: 28, fontSize: 11 }}>
+              {initials}
+            </div>
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: 13,
+                color: "var(--color-text)",
+              }}
+            >
+              {dedica.nome_firma}
+            </span>
+          </div>
+          <span style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
+            {timeAgo(dedica.created_at)}
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Leaderboard ───────────────────────────────────────────────────
+// ── Sidebar ────────────────────────────────────────────────────────
 
-function LeaderboardPanel({
+function Sidebar({
   entries,
   total,
 }: {
@@ -59,54 +97,99 @@ function LeaderboardPanel({
   total: number;
 }) {
   const medals = ["🥇", "🥈", "🥉"];
+
   return (
-    <div className="flex flex-col h-full p-4 border-r-2 border-surface2">
-      {/* Participants counter */}
-      <div className="card-memphis p-4 mb-4 text-center" style={{ borderColor: "var(--color-accent)" }}>
+    <div
+      className="flex flex-col h-full p-4 no-scrollbar overflow-y-auto"
+      style={{
+        background: "var(--color-surface)",
+        borderRight: "1.5px solid rgba(0,0,0,0.07)",
+      }}
+    >
+      {/* Counter */}
+      <div
+        className="rounded-2xl p-4 mb-4 text-center"
+        style={{ background: "var(--color-surface2)" }}
+      >
         <div
-          className="font-display text-6xl text-accent leading-none"
-          style={{ fontFamily: "var(--font-display)" }}
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 52,
+            fontWeight: 900,
+            lineHeight: 1,
+            color: "var(--color-secondary)",
+          }}
         >
           {total}
         </div>
-        <div className="text-text-muted text-xs uppercase tracking-widest mt-1">
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--color-text-muted)",
+            marginTop: 4,
+          }}
+        >
           partecipanti
         </div>
       </div>
 
-      {/* Leaderboard title */}
+      {/* Leaderboard */}
       <div
-        className="font-display text-2xl text-secondary mb-3 uppercase tracking-wide"
-        style={{ fontFamily: "var(--font-display)" }}
+        style={{
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--color-text-muted)",
+          marginBottom: 12,
+          fontFamily: "var(--font-display)",
+        }}
       >
-        Classifica
+        🏆 Classifica
       </div>
 
-      {/* Entries */}
-      <div className="flex flex-col gap-2 overflow-hidden flex-1">
-        {entries.slice(0, 8).map((e, i) => (
-          <div
-            key={`${e.nome}-${i}`}
-            className="flex items-center gap-2 p-2 rounded"
-            style={{ background: i === 0 ? "rgba(255, 214, 0, 0.08)" : "transparent" }}
-          >
-            <span className="text-xl w-7 shrink-0">{medals[i] ?? `${i + 1}.`}</span>
-            <span className="text-text-main text-sm font-medium flex-1 truncate">
-              {e.nome}
-            </span>
-            <span
-              className="font-display text-lg shrink-0"
+      <div className="flex flex-col gap-2">
+        {entries.slice(0, 8).map((e, i) => {
+          const avatarColor = AVATAR_COLORS[getColorIndex(e.nome)];
+          return (
+            <div
+              key={`${e.nome}-${i}`}
+              className="flex items-center gap-2 rounded-xl px-3 py-2"
               style={{
-                fontFamily: "var(--font-display)",
-                color: i === 0 ? "var(--color-secondary)" : "var(--color-text-muted)",
+                background: i === 0 ? "rgba(79,142,247,0.08)" : "transparent",
               }}
             >
-              {e.punteggio}/{e.totale_domande}
-            </span>
-          </div>
-        ))}
+              <span style={{ fontSize: i < 3 ? 16 : 12, width: 24, textAlign: "center", color: "var(--color-text-muted)" }}>
+                {medals[i] ?? `${i + 1}.`}
+              </span>
+              <div className="avatar" style={{ background: avatarColor, width: 26, height: 26, fontSize: 10 }}>
+                {getInitials(e.nome)}
+              </div>
+              <span
+                className="flex-1 truncate"
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}
+              >
+                {e.nome}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: i === 0 ? "var(--color-secondary)" : "var(--color-text-muted)",
+                }}
+              >
+                {e.punteggio}/{e.totale_domande}
+              </span>
+            </div>
+          );
+        })}
+
         {entries.length === 0 && (
-          <p className="text-text-muted text-sm italic">
+          <p style={{ fontSize: 13, color: "var(--color-text-muted)", fontStyle: "italic" }}>
             Ancora nessuno... sii il primo! 🎯
           </p>
         )}
@@ -115,70 +198,135 @@ function LeaderboardPanel({
   );
 }
 
-// ── Typing Banner ─────────────────────────────────────────────────
+// ── Typing Banner ──────────────────────────────────────────────────
 
 function TypingBanner({ typers }: { typers: TypingStatus[] }) {
   if (typers.length === 0) return null;
   const names = typers.map((t) => t.nome).join(", ");
   const verb = typers.length === 1 ? "sta scrivendo" : "stanno scrivendo";
+
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2 text-sm"
-      style={{ background: "rgba(124, 58, 237, 0.15)", borderBottom: "1px solid var(--color-accent2)" }}
+      className="flex items-center gap-3 px-5 py-2"
+      style={{
+        background: "rgba(124,93,232,0.07)",
+        borderBottom: "1px solid rgba(124,93,232,0.15)",
+        fontSize: 13,
+        color: "var(--color-text-muted)",
+      }}
     >
       <div className="flex gap-1">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="live-dot"
-            style={{
-              background: "var(--color-accent2)",
-              animationDelay: `${i * 0.2}s`,
-              width: "6px",
-              height: "6px",
-            }}
-          />
-        ))}
+        <span className="typing-dot" />
+        <span className="typing-dot" />
+        <span className="typing-dot" />
       </div>
-      <span className="text-text-muted">
-        <span className="text-text-main font-semibold">{names}</span> {verb}...
+      <span>
+        <strong style={{ color: "var(--color-text)", fontWeight: 700 }}>{names}</strong>{" "}
+        {verb}...
       </span>
     </div>
   );
 }
 
-// ── Wall Header ───────────────────────────────────────────────────
+// ── Wall Header ────────────────────────────────────────────────────
 
-function WallHeader() {
+function WallHeader({ total }: { total: number }) {
   return (
     <div
-      className="flex items-center justify-between px-6 py-4 border-b-2 border-surface2"
-      style={{ background: "var(--color-surface)" }}
+      className="flex items-center justify-between px-5 py-3"
+      style={{
+        background: "var(--color-surface)",
+        borderBottom: "1.5px solid rgba(0,0,0,0.07)",
+        gridColumn: "1 / -1",
+      }}
     >
-      <div>
+      <div className="flex items-center gap-3">
         <h1
-          className="font-display text-4xl text-text-main leading-none"
-          style={{ fontFamily: "var(--font-display)" }}
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 22,
+            fontWeight: 900,
+            color: "var(--color-text)",
+            margin: 0,
+            lineHeight: 1,
+          }}
         >
           {EVENT_CONFIG.wallTitle}
         </h1>
-        <p className="text-text-muted text-sm">{EVENT_CONFIG.eventSubtitle}</p>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="live-dot" />
-        <span className="text-text-muted text-sm uppercase tracking-widest">Live</span>
         <span
-          className="font-display text-2xl text-primary ml-4"
-          style={{ fontFamily: "var(--font-display)" }}
+          style={{
+            fontSize: 13,
+            color: "var(--color-text-muted)",
+            fontWeight: 500,
+          }}
         >
-          {EVENT_CONFIG.eventName}
+          {EVENT_CONFIG.eventSubtitle}
         </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="live-dot" />
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#d63650",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
+            Live
+          </span>
+        </div>
+        <div
+          className="rounded-full px-4 py-1 flex items-center gap-2"
+          style={{ background: "#eef2ff" }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#4f46e5" }}>
+            👥 {total} partecipanti
+          </span>
+        </div>
+        <div
+          className="rounded-full px-4 py-1"
+          style={{ background: "var(--color-surface2)" }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 14,
+              fontWeight: 800,
+              color: "var(--color-text)",
+            }}
+          >
+            {EVENT_CONFIG.eventName}
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Main Wall Page ────────────────────────────────────────────────
+// ── Empty State ────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div
+      className="flex flex-col items-center justify-center h-full text-center p-8"
+      style={{ color: "var(--color-text-muted)" }}
+    >
+      <div style={{ fontSize: 72, marginBottom: 16, opacity: 0.3 }}>💌</div>
+      <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: "var(--color-text)" }}>
+        I messaggi appariranno qui in tempo reale
+      </p>
+      <p style={{ fontSize: 14 }}>
+        Scansiona il QR code per essere il primo!
+      </p>
+    </div>
+  );
+}
+
+// ── Main Wall Page ─────────────────────────────────────────────────
 
 export default function WallPage() {
   const [dediche, setDediche] = useState<Dedica[]>([]);
@@ -203,16 +351,13 @@ export default function WallPage() {
   useEffect(() => {
     load();
 
-    // Realtime: new dedica
     const dedicaChannel = supabase
       .channel("wall-dediche")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "dediche" }, (payload) => {
         setDediche((prev) => [payload.new as Dedica, ...prev]);
-        setTotal((t) => t + 1);
       })
       .subscribe();
 
-    // Realtime: typing status
     const typingChannel = supabase
       .channel("wall-typing")
       .on("postgres_changes", { event: "*", schema: "public", table: "typing_status" }, () => {
@@ -220,7 +365,6 @@ export default function WallPage() {
       })
       .subscribe();
 
-    // Realtime: new session (leaderboard update)
     const sessionChannel = supabase
       .channel("wall-sessions")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "sessions" }, () => {
@@ -229,10 +373,8 @@ export default function WallPage() {
       })
       .subscribe();
 
-    // Polling fallback every 15s
     const poll = setInterval(load, 15_000);
 
-    // Clean stale typers every 10s
     const typerCleanup = setInterval(() => {
       const cutoff = Date.now() - 45_000;
       setTypers((prev) => prev.filter((t) => new Date(t.last_seen).getTime() > cutoff));
@@ -252,10 +394,10 @@ export default function WallPage() {
     if (!feedRef.current) return;
     const el = feedRef.current;
     const scroll = setInterval(() => {
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
         el.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        el.scrollBy({ top: 320, behavior: "smooth" });
+        el.scrollBy({ top: 300, behavior: "smooth" });
       }
     }, 4000);
     return () => clearInterval(scroll);
@@ -263,44 +405,35 @@ export default function WallPage() {
 
   return (
     <div
-      className="h-screen overflow-hidden flex flex-col memphis-bg"
-      style={{ fontFamily: "var(--font-body)" }}
+      className="h-screen overflow-hidden flex flex-col"
+      style={{ fontFamily: "var(--font-body)", background: "var(--color-surface)" }}
     >
-      <WallHeader />
+      {/* Header — full width */}
+      <WallHeader total={total} />
+
+      {/* Typing banner — full width */}
       <TypingBanner typers={typers} />
 
+      {/* Body: sidebar + feed */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Leaderboard */}
-        <div className="w-72 shrink-0 overflow-hidden">
-          <LeaderboardPanel entries={leaderboard} total={total} />
+        {/* Left sidebar */}
+        <div className="shrink-0 overflow-hidden" style={{ width: 220 }}>
+          <Sidebar entries={leaderboard} total={total} />
         </div>
 
-        {/* Right: Dedica feed (masonry-style columns) */}
+        {/* Dedica feed — masonry columns */}
         <div
           ref={feedRef}
-          className="flex-1 overflow-y-auto no-scrollbar p-4"
-          style={{ columnCount: 2, columnGap: "1rem" }}
+          className="flex-1 no-scrollbar overflow-y-auto board-bg p-4"
+          style={{ columnCount: 3, columnGap: "12px" }}
         >
           {dediche.length === 0 ? (
-            <div className="col-span-2 flex flex-col items-center justify-center h-full text-center">
-              <div
-                className="font-display text-8xl text-surface2 mb-4"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                💌
-              </div>
-              <p className="text-text-muted text-lg">
-                I messaggi appariranno qui in tempo reale
-              </p>
-              <p className="text-text-muted text-sm mt-2">
-                Scansiona il QR code per essere il primo!
-              </p>
+            <div style={{ columnSpan: "all" }}>
+              <EmptyState />
             </div>
           ) : (
             dediche.map((d, i) => (
-              <div key={d.id} style={{ breakInside: "avoid", marginBottom: "1rem" }}>
-                <DedicaCard dedica={d} index={i} />
-              </div>
+              <DedicaCard key={d.id} dedica={d} index={i} />
             ))
           )}
         </div>

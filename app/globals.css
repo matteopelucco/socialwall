@@ -1,27 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS Custom Properties (set by layout from EVENT_CONFIG.theme) ── */
+/* ── CSS Custom Properties (injected from EVENT_CONFIG.theme) ── */
 :root {
-  --color-primary:    #FF3D5A;
-  --color-secondary:  #FFD600;
-  --color-accent:     #00E5FF;
-  --color-accent2:    #7C3AED;
-  --color-bg:         #0A0A0F;
-  --color-surface:    #16161F;
-  --color-surface2:   #1E1E2A;
-  --color-text:       #F5F5F5;
-  --color-text-muted: #888899;
-  --font-display:     'Bebas Neue', sans-serif;
-  --font-body:        'Plus Jakarta Sans', sans-serif;
+  --color-primary:    #f06292;
+  --color-secondary:  #4f8ef7;
+  --color-accent:     #34c072;
+  --color-accent2:    #7c5de8;
+  --color-bg:         #f0ebe3;
+  --color-surface:    #ffffff;
+  --color-surface2:   #f7f4ef;
+  --color-board-bg:   #f0ebe3;
+  --color-text:       #1a1a2e;
+  --color-text-muted: #9a96a8;
+  --font-display:     'Nunito', sans-serif;
+  --font-body:        'Nunito Sans', sans-serif;
 }
 
-/* ── Base ─────────────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body {
   margin: 0;
@@ -30,149 +29,225 @@ html, body {
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Neo-Memphis geometric background pattern ─────────────────────── */
-.memphis-bg {
-  background-color: var(--color-bg);
-  background-image:
-    radial-gradient(circle, var(--color-primary) 1px, transparent 1px),
-    radial-gradient(circle, var(--color-accent2) 1px, transparent 1px);
-  background-size: 40px 40px, 80px 80px;
-  background-position: 0 0, 20px 20px;
-  background-attachment: fixed;
+/* ── Board background (subtle dot pattern like Padlet) ── */
+.board-bg {
+  background-color: var(--color-board-bg);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-.memphis-bg::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(10, 10, 15, 0.92) 0%,
-    rgba(10, 10, 15, 0.85) 50%,
-    rgba(10, 10, 15, 0.92) 100%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.memphis-bg > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Neo-Memphis card style ───────────────────────────────────────── */
-.card-memphis {
+/* ── White surface (header, sidebar, cards) ── */
+.surface {
   background: var(--color-surface);
-  border: 2px solid var(--color-primary);
-  box-shadow: 5px 5px 0 var(--color-secondary);
-  border-radius: 4px;
 }
 
-.card-memphis:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 7px 7px 0 var(--color-secondary);
-  transition: all 0.15s ease;
+/* ── Padlet-style card ── */
+.padlet-card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 0 0 1.5px rgba(0,0,0,0.06);
+  overflow: hidden;
+  position: relative;
+  break-inside: avoid;
 }
 
-/* ── Neo-Memphis button ───────────────────────────────────────────── */
-.btn-memphis {
+.padlet-card::before {
+  content: '';
+  display: block;
+  height: 5px;
+  width: 100%;
+}
+
+/* Card color variants — top strip + bg tint */
+.card-amber  { background: #fffbf0; } .card-amber::before  { background: #f5a623; }
+.card-blue   { background: #f0f7ff; } .card-blue::before   { background: #4f8ef7; }
+.card-green  { background: #f0fff4; } .card-green::before  { background: #34c072; }
+.card-pink   { background: #fff0f6; } .card-pink::before   { background: #f06292; }
+.card-violet { background: #f3f0ff; } .card-violet::before { background: #7c5de8; }
+.card-cyan   { background: #f0fbff; } .card-cyan::before   { background: #00bcd4; }
+
+/* ── Avatar circle ── */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Primary button (Padlet-style: rounded, solid, soft shadow) ── */
+.btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  letter-spacing: 0.08em;
-  font-size: 1.1rem;
-  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 0.8rem 2rem;
   background: var(--color-primary);
   color: #fff;
-  border: 2px solid var(--color-primary);
-  box-shadow: 4px 4px 0 var(--color-secondary);
-  border-radius: 4px;
+  border: none;
+  border-radius: 100px;
   cursor: pointer;
-  transition: all 0.12s ease;
-  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(240,98,146,0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   user-select: none;
 }
-
-.btn-memphis:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--color-secondary);
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240,98,146,0.45);
 }
-
-.btn-memphis:active:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 var(--color-secondary);
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(240,98,146,0.3);
 }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-memphis:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-memphis-secondary {
-  background: transparent;
-  color: var(--color-secondary);
-  border-color: var(--color-secondary);
-  box-shadow: 4px 4px 0 var(--color-primary);
-}
-
-.btn-memphis-secondary:hover:not(:disabled) {
-  box-shadow: 6px 6px 0 var(--color-primary);
-}
-
-/* ── Typography ───────────────────────────────────────────────────── */
-.font-display {
+/* ── Secondary button ── */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-display);
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 0.7rem 1.6rem;
+  background: transparent;
+  color: var(--color-text);
+  border: 2px solid rgba(0,0,0,0.12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.2);
 }
 
-/* ── Accent strip (left border color accent on cards) ────────────── */
-.accent-strip-primary  { border-left: 4px solid var(--color-primary); }
-.accent-strip-secondary { border-left: 4px solid var(--color-secondary); }
-.accent-strip-accent   { border-left: 4px solid var(--color-accent); }
-.accent-strip-accent2  { border-left: 4px solid var(--color-accent2); }
+/* ── Input / Textarea ── */
+.input-padlet {
+  width: 100%;
+  background: var(--color-surface2);
+  color: var(--color-text);
+  border: 2px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-padlet:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(240,98,146,0.12);
+}
+.input-padlet::placeholder { color: var(--color-text-muted); }
 
-/* ── Live dot ─────────────────────────────────────────────────────── */
+/* ── Live dot ── */
 .live-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-primary);
-  animation: pulseDot 1.2s ease-in-out infinite;
+  background: #d63650;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
 }
 
-/* ── Scrollbar (wall page) ────────────────────────────────────────── */
+/* ── Typing dots ── */
+.typing-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--color-text-muted);
+  border-radius: 50%;
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── Animations ── */
+.animate-card-in {
+  animation: cardIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: scale(0.88) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pop {
+  animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Quiz option states ── */
+.option-correct {
+  border-color: #34c072 !important;
+  background: rgba(52, 192, 114, 0.1) !important;
+  box-shadow: 0 0 0 2px #34c072 !important;
+}
+.option-wrong {
+  border-color: #f06292 !important;
+  background: rgba(240, 98, 146, 0.1) !important;
+  box-shadow: 0 0 0 2px #f06292 !important;
+}
+.option-neutral {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Scrollbar hide ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Answer option states ─────────────────────────────────────────── */
-.option-correct {
-  border-color: #22c55e !important;
-  background: rgba(34, 197, 94, 0.15) !important;
-  box-shadow: 4px 4px 0 #22c55e !important;
-}
-
-.option-wrong {
-  border-color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.15) !important;
-  box-shadow: 4px 4px 0 #ef4444 !important;
-}
-
-.option-neutral {
-  border-color: var(--color-surface2) !important;
-  opacity: 0.4;
-}
-
-/* ── Wall TV layout ───────────────────────────────────────────────── */
-.wall-grid {
+/* ── Wall layout ── */
+.wall-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  grid-template-rows: auto 1fr;
-  height: 100vh;
+  grid-template-columns: 220px 1fr;
+  height: 100%;
   overflow: hidden;
+}
+
+/* ── Quiz: mobile-optimized container ── */
+.quiz-container {
+  min-height: 100svh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
 }

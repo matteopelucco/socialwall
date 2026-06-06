@@ -2,7 +2,7 @@
 
 // app/quiz/page.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
-import { EVENT_CONFIG, type Question } from "@/config/event";
+import { EVENT_CONFIG, AVATAR_COLORS, type Question } from "@/config/event";
 import { pickQuestions, getScoreMessage, generateTempId } from "@/lib/utils";
 import {
   createSession,
@@ -12,29 +12,57 @@ import {
 } from "@/lib/supabase";
 import type { QuizPhase } from "@/lib/types";
 
-// ── Sub-components ────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────
+
+function getColorIndex(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % AVATAR_COLORS.length;
+}
+
+// ── WelcomeScreen ──────────────────────────────────────────────────
 
 function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
   const [name, setName] = useState("");
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen memphis-bg p-6 text-center">
-      <div className="w-full max-w-sm animate-slide-up">
-        <div
-          className="font-display text-secondary text-lg mb-2 tracking-widest uppercase"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {EVENT_CONFIG.eventDate}
-        </div>
-        <h1
-          className="font-display text-5xl text-text-main mb-2 leading-none"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {EVENT_CONFIG.quizTitle}
-        </h1>
-        <p className="text-text-muted text-sm mb-8">{EVENT_CONFIG.quizSubtitle}</p>
 
-        <div className="card-memphis p-6 mb-6">
-          <label className="block text-left text-xs uppercase tracking-widest text-text-muted mb-2">
+  return (
+    <div className="quiz-container">
+      <div className="w-full max-w-sm animate-slide-up">
+        {/* Header card */}
+        <div
+          className="padlet-card card-pink mb-6 p-6 text-center"
+        >
+          <div style={{ fontSize: 48, marginBottom: 8 }}>🎉</div>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 28,
+              fontWeight: 900,
+              color: "var(--color-text)",
+              margin: "0 0 8px",
+              lineHeight: 1.1,
+            }}
+          >
+            {EVENT_CONFIG.quizTitle}
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--color-text-muted)", margin: 0 }}>
+            {EVENT_CONFIG.quizSubtitle}
+          </p>
+        </div>
+
+        {/* Name input */}
+        <div className="padlet-card card-blue p-5 mb-4">
+          <label
+            style={{
+              display: "block",
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--color-text-muted)",
+              marginBottom: 8,
+            }}
+          >
             Il tuo nome
           </label>
           <input
@@ -43,28 +71,39 @@ function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && name.trim() && onStart(name.trim())}
             placeholder="Come ti chiami?"
-            className="w-full bg-surface2 text-text-main border-2 border-surface2 focus:border-primary rounded px-4 py-3 text-base outline-none transition-colors"
+            className="input-padlet"
             autoFocus
           />
         </div>
 
         <button
-          className="btn-memphis w-full text-xl py-4"
+          className="btn-primary w-full text-lg py-4"
           onClick={() => name.trim() && onStart(name.trim())}
           disabled={!name.trim()}
         >
           Inizia il Quiz →
         </button>
 
-        <p className="text-text-muted text-xs mt-4">
-          {EVENT_CONFIG.questionsPerSession} domande · ~2 minuti
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 12,
+            color: "var(--color-text-muted)",
+            marginTop: 12,
+          }}
+        >
+          {EVENT_CONFIG.questionsPerSession} domande · circa 2 minuti
         </p>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
+// ── QuestionCard ───────────────────────────────────────────────────
+
+const OPTION_CARD_CLASSES = ["card-amber", "card-blue", "card-green", "card-violet"];
+const OPTION_LABELS = ["A", "B", "C", "D"];
+const OPTION_STRIP_COLORS = ["#f5a623", "#4f8ef7", "#34c072", "#7c5de8"];
 
 function QuestionCard({
   question,
@@ -81,47 +120,60 @@ function QuestionCard({
   answered: boolean;
   selectedIndex: number | null;
 }) {
-  const optionLabels = ["A", "B", "C", "D"];
-
   const getOptionClass = (idx: number) => {
-    if (!answered) return "";
+    if (!answered) return OPTION_CARD_CLASSES[idx];
     if (idx === question.corretta) return "option-correct";
-    if (idx === selectedIndex && idx !== question.corretta) return "option-wrong";
+    if (idx === selectedIndex) return "option-wrong";
     return "option-neutral";
   };
 
   return (
-    <div className="flex flex-col min-h-screen memphis-bg p-4">
-      {/* Progress */}
-      <div className="w-full max-w-sm mx-auto pt-4 pb-2">
-        <div className="flex justify-between items-center mb-2">
+    <div className="quiz-container" style={{ justifyContent: "flex-start", paddingTop: "1.5rem" }}>
+      <div className="w-full max-w-sm">
+        {/* Progress */}
+        <div className="flex items-center justify-between mb-4">
           <span
-            className="font-display text-primary text-xl"
-            style={{ fontFamily: "var(--font-display)" }}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 18,
+              fontWeight: 900,
+              color: "var(--color-primary)",
+            }}
           >
-            {index + 1}/{total}
+            {index + 1} / {total}
           </span>
           <div className="flex gap-1">
             {Array.from({ length: total }).map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i < index
-                    ? "bg-primary w-4"
-                    : i === index
-                    ? "bg-secondary w-4"
-                    : "bg-surface2 w-2"
-                }`}
+                style={{
+                  height: 5,
+                  width: i < index ? 16 : i === index ? 16 : 8,
+                  borderRadius: 10,
+                  background:
+                    i < index
+                      ? "var(--color-primary)"
+                      : i === index
+                      ? "var(--color-secondary)"
+                      : "rgba(0,0,0,0.1)",
+                  transition: "all 0.3s ease",
+                }}
               />
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Question */}
-      <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto gap-4 animate-slide-up">
-        <div className="card-memphis p-5">
-          <p className="text-text-main text-lg font-semibold leading-snug">
+        {/* Question */}
+        <div className="padlet-card card-pink p-5 mb-4 animate-slide-up">
+          <p
+            style={{
+              fontSize: 17,
+              fontWeight: 600,
+              color: "var(--color-text)",
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
             {question.testo}
           </p>
         </div>
@@ -133,27 +185,46 @@ function QuestionCard({
               key={idx}
               onClick={() => !answered && onAnswer(idx)}
               disabled={answered}
-              className={`card-memphis p-4 text-left flex items-center gap-3 cursor-pointer transition-all duration-200 ${getOptionClass(idx)}`}
+              className={`padlet-card ${getOptionClass(idx)} w-full text-left flex items-center gap-3 p-4 transition-all duration-200`}
+              style={{ cursor: answered ? "default" : "pointer" }}
             >
               <span
-                className="font-display text-primary text-xl w-7 shrink-0"
-                style={{ fontFamily: "var(--font-display)" }}
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 900,
+                  fontSize: 16,
+                  color: answered ? "inherit" : OPTION_STRIP_COLORS[idx],
+                  width: 24,
+                  flexShrink: 0,
+                }}
               >
-                {optionLabels[idx]}
+                {OPTION_LABELS[idx]}
               </span>
-              <span className="text-text-main text-sm font-medium">{opt}</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: "var(--color-text)" }}>
+                {opt}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* Curiosità */}
+        {/* Fun fact */}
         {answered && question.curiosita && (
-          <div
-            className="card-memphis p-4 animate-fade-in"
-            style={{ borderColor: "var(--color-accent)", boxShadow: "4px 4px 0 var(--color-accent)" }}
-          >
-            <p className="text-xs text-text-muted uppercase tracking-widest mb-1">Lo sapevi?</p>
-            <p className="text-sm text-text-main">{question.curiosita}</p>
+          <div className="padlet-card card-cyan p-4 mt-4 animate-fade-in">
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#00bcd4",
+                marginBottom: 4,
+              }}
+            >
+              Lo sapevi?
+            </p>
+            <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0 }}>
+              {question.curiosita}
+            </p>
           </div>
         )}
       </div>
@@ -161,7 +232,7 @@ function QuestionCard({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
+// ── ScoreScreen ────────────────────────────────────────────────────
 
 function ScoreScreen({
   score,
@@ -179,30 +250,41 @@ function ScoreScreen({
   const [showDetails, setShowDetails] = useState(false);
   const message = getScoreMessage(score, EVENT_CONFIG.scoreMessages);
   const pct = Math.round((score / total) * 100);
+  const cardClass = pct >= 80 ? "card-green" : pct >= 50 ? "card-amber" : "card-pink";
 
   return (
-    <div className="flex flex-col items-center min-h-screen memphis-bg p-6">
-      <div className="w-full max-w-sm mt-8 animate-pop">
-        {/* Big score */}
-        <div className="card-memphis p-8 text-center mb-4">
+    <div className="quiz-container">
+      <div className="w-full max-w-sm animate-pop">
+        <div className={`padlet-card ${cardClass} p-8 text-center mb-4`}>
           <div
-            className="font-display text-8xl text-secondary leading-none"
-            style={{ fontFamily: "var(--font-display)" }}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 80,
+              fontWeight: 900,
+              lineHeight: 1,
+              color: "var(--color-text)",
+            }}
           >
             {score}/{total}
           </div>
           <div
-            className="font-display text-2xl text-primary mt-2"
-            style={{ fontFamily: "var(--font-display)" }}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 22,
+              fontWeight: 800,
+              color: "var(--color-primary)",
+              marginTop: 4,
+            }}
           >
             {pct}%
           </div>
-          <p className="text-text-main mt-3 font-semibold">{message}</p>
+          <p style={{ fontWeight: 600, color: "var(--color-text)", marginTop: 12, fontSize: 16 }}>
+            {message}
+          </p>
         </div>
 
-        {/* Details toggle */}
         <button
-          className="btn-memphis-secondary btn-memphis w-full mb-4 text-base"
+          className="btn-secondary w-full mb-3"
           onClick={() => setShowDetails(!showDetails)}
         >
           {showDetails ? "Nascondi risposte" : "Vedi risposte corrette"}
@@ -215,10 +297,12 @@ function ScoreScreen({
               return (
                 <div
                   key={q.id}
-                  className={`card-memphis p-3 ${correct ? "option-correct" : "option-wrong"}`}
+                  className={`padlet-card p-3 ${correct ? "card-green" : "card-pink"}`}
                 >
-                  <p className="text-xs text-text-muted mb-1">{i + 1}. {q.testo}</p>
-                  <p className="text-sm font-semibold text-text-main">
+                  <p style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 2 }}>
+                    {i + 1}. {q.testo}
+                  </p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)", margin: 0 }}>
                     {correct ? "✓" : "✗"} {q.opzioni[q.corretta]}
                   </p>
                 </div>
@@ -227,7 +311,7 @@ function ScoreScreen({
           </div>
         )}
 
-        <button className="btn-memphis w-full text-xl py-4" onClick={onContinue}>
+        <button className="btn-primary w-full text-lg py-4" onClick={onContinue}>
           Lascia un messaggio 💌
         </button>
       </div>
@@ -235,7 +319,7 @@ function ScoreScreen({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
+// ── DedicaForm ─────────────────────────────────────────────────────
 
 function DedicaForm({
   defaultName,
@@ -251,7 +335,6 @@ function DedicaForm({
   const [loading, setLoading] = useState(false);
   const typingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Typing status updates
   useEffect(() => {
     if (testo.length > 0) {
       upsertTypingStatus(sessionId, defaultName);
@@ -260,9 +343,7 @@ function DedicaForm({
         upsertTypingStatus(sessionId, defaultName);
       }, 5000);
     }
-    return () => {
-      if (typingTimer.current) clearInterval(typingTimer.current);
-    };
+    return () => { if (typingTimer.current) clearInterval(typingTimer.current); };
   }, [testo, sessionId, defaultName]);
 
   const handleSubmit = async () => {
@@ -283,20 +364,38 @@ function DedicaForm({
   const remaining = 300 - testo.length;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen memphis-bg p-6">
+    <div className="quiz-container">
       <div className="w-full max-w-sm animate-slide-up">
-        <h2
-          className="font-display text-4xl text-text-main mb-1 text-center"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {EVENT_CONFIG.wallTitle}
-        </h2>
-        <p className="text-text-muted text-sm text-center mb-6">
-          Il tuo messaggio apparirà sul muro in tempo reale ✨
-        </p>
+        <div className="padlet-card card-violet p-5 mb-4 text-center">
+          <div style={{ fontSize: 36, marginBottom: 6 }}>💌</div>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 24,
+              fontWeight: 900,
+              color: "var(--color-text)",
+              margin: "0 0 4px",
+            }}
+          >
+            {EVENT_CONFIG.wallTitle}
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--color-text-muted)", margin: 0 }}>
+            Il tuo messaggio apparirà sul muro in tempo reale ✨
+          </p>
+        </div>
 
-        <div className="card-memphis p-5 mb-4">
-          <label className="block text-xs uppercase tracking-widest text-text-muted mb-2">
+        <div className="padlet-card card-amber p-5 mb-3">
+          <label
+            style={{
+              display: "block",
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--color-text-muted)",
+              marginBottom: 8,
+            }}
+          >
             Il tuo messaggio
           </label>
           <textarea
@@ -304,27 +403,45 @@ function DedicaForm({
             onChange={(e) => setTesto(e.target.value.slice(0, 300))}
             placeholder={EVENT_CONFIG.dedicaPlaceholder}
             rows={5}
-            className="w-full bg-surface2 text-text-main border-2 border-surface2 focus:border-primary rounded px-3 py-2 text-sm outline-none resize-none transition-colors"
+            className="input-padlet"
+            style={{ resize: "none" }}
           />
-          <div className={`text-right text-xs mt-1 ${remaining < 30 ? "text-primary" : "text-text-muted"}`}>
+          <div
+            style={{
+              textAlign: "right",
+              fontSize: 11,
+              marginTop: 4,
+              color: remaining < 30 ? "var(--color-primary)" : "var(--color-text-muted)",
+            }}
+          >
             {remaining} caratteri rimanenti
           </div>
         </div>
 
-        <div className="card-memphis p-5 mb-6">
-          <label className="block text-xs uppercase tracking-widest text-text-muted mb-2">
+        <div className="padlet-card card-blue p-5 mb-5">
+          <label
+            style={{
+              display: "block",
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--color-text-muted)",
+              marginBottom: 8,
+            }}
+          >
             Firma
           </label>
           <input
             type="text"
             value={firma}
             onChange={(e) => setFirma(e.target.value)}
-            className="w-full bg-surface2 text-text-main border-2 border-surface2 focus:border-primary rounded px-3 py-2 text-sm outline-none transition-colors"
+            className="input-padlet"
           />
         </div>
 
         <button
-          className="btn-memphis w-full text-xl py-4"
+          className="btn-primary w-full text-lg py-4"
           onClick={handleSubmit}
           disabled={!testo.trim() || loading}
         >
@@ -335,30 +452,32 @@ function DedicaForm({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
+// ── ThankYouScreen ─────────────────────────────────────────────────
 
 function ThankYouScreen() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen memphis-bg p-6 text-center">
-      <div className="w-full max-w-sm animate-pop">
-        <div
-          className="font-display text-9xl text-secondary mb-4"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          🎉
+    <div className="quiz-container">
+      <div className="w-full max-w-sm text-center animate-pop">
+        <div className="padlet-card card-green p-8 mb-4">
+          <div style={{ fontSize: 64, marginBottom: 12 }}>🎉</div>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 36,
+              fontWeight: 900,
+              color: "var(--color-text)",
+              margin: "0 0 8px",
+            }}
+          >
+            Grazie!
+          </h2>
+          <p style={{ fontSize: 15, color: "var(--color-text-muted)", margin: 0 }}>
+            Il tuo messaggio è sul muro per {EVENT_CONFIG.honoree}.
+          </p>
         </div>
-        <h2
-          className="font-display text-5xl text-text-main mb-4"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          Grazie!
-        </h2>
-        <p className="text-text-muted mb-6">
-          Il tuo messaggio è sul muro per {EVENT_CONFIG.honoree}.
-        </p>
-        <div className="card-memphis p-4">
-          <p className="text-sm text-text-main">
-            Cerca il tuo nome sul grande schermo! 📺
+        <div className="padlet-card card-blue p-4">
+          <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
+            📺 Cerca il tuo nome sul grande schermo!
           </p>
         </div>
       </div>
@@ -366,7 +485,7 @@ function ThankYouScreen() {
   );
 }
 
-// ── Main Quiz Page ────────────────────────────────────────────────
+// ── Main Quiz Page ─────────────────────────────────────────────────
 
 export default function QuizPage() {
   const [phase, setPhase] = useState<QuizPhase>("welcome");
@@ -388,37 +507,37 @@ export default function QuizPage() {
     setPhase("question");
   }, []);
 
-  const handleAnswer = useCallback((idx: number) => {
-    if (answered) return;
-    setSelectedIndex(idx);
-    setAnswered(true);
+  const handleAnswer = useCallback(
+    (idx: number) => {
+      if (answered) return;
+      setSelectedIndex(idx);
+      setAnswered(true);
 
-    const isCorrect = idx === questions[currentQ].corretta;
-    const newAnswers = [...answers];
-    newAnswers[currentQ] = idx;
-    setAnswers(newAnswers);
-    if (isCorrect) setScore((s) => s + 1);
+      const isCorrect = idx === questions[currentQ].corretta;
+      const newAnswers = [...answers];
+      newAnswers[currentQ] = idx;
+      setAnswers(newAnswers);
+      const newScore = isCorrect ? score + 1 : score;
+      if (isCorrect) setScore(newScore);
 
-    // Auto-advance
-    setTimeout(() => {
-      if (currentQ + 1 < questions.length) {
-        setCurrentQ((q) => q + 1);
-        setAnswered(false);
-        setSelectedIndex(null);
-      } else {
-        // Quiz complete — save session
-        const finalScore = isCorrect ? score + 1 : score;
-        createSession(userName, finalScore, questions.length).then((session) => {
-          setSessionId(session.id);
-        });
-        setPhase("score");
-      }
-    }, 1800);
-  }, [answered, currentQ, questions, answers, score, userName]);
+      setTimeout(() => {
+        if (currentQ + 1 < questions.length) {
+          setCurrentQ((q) => q + 1);
+          setAnswered(false);
+          setSelectedIndex(null);
+        } else {
+          createSession(userName, newScore, questions.length).then((session) => {
+            setSessionId(session.id);
+          });
+          setPhase("score");
+        }
+      }, 1800);
+    },
+    [answered, currentQ, questions, answers, score, userName]
+  );
 
   if (phase === "welcome") return <WelcomeScreen onStart={handleStart} />;
-
-  if (phase === "question" && questions.length > 0) {
+  if (phase === "question" && questions.length > 0)
     return (
       <QuestionCard
         question={questions[currentQ]}
@@ -429,9 +548,7 @@ export default function QuizPage() {
         selectedIndex={selectedIndex}
       />
     );
-  }
-
-  if (phase === "score") {
+  if (phase === "score")
     return (
       <ScoreScreen
         score={score}
@@ -441,9 +558,7 @@ export default function QuizPage() {
         onContinue={() => setPhase("dedica")}
       />
     );
-  }
-
-  if (phase === "dedica") {
+  if (phase === "dedica")
     return (
       <DedicaForm
         defaultName={userName}
@@ -451,7 +566,5 @@ export default function QuizPage() {
         onSubmit={() => setPhase("thankyou")}
       />
     );
-  }
-
   return <ThankYouScreen />;
 }

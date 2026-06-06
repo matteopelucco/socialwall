@@ -9,7 +9,7 @@ export type Question = {
   testo: string;
   opzioni: [string, string, string, string];
   corretta: 0 | 1 | 2 | 3;
-  curiosita?: string; // fun fact shown after answering
+  curiosita?: string;
 };
 
 export type ScoreMessages = {
@@ -24,6 +24,7 @@ export type EventTheme = {
   "--color-bg": string;
   "--color-surface": string;
   "--color-surface2": string;
+  "--color-board-bg": string;
   "--color-text": string;
   "--color-text-muted": string;
   "--font-display": string;
@@ -47,27 +48,43 @@ export type EventConfig = {
 };
 
 // ============================================================
-// DEFAULT THEME: Neo-Memphis
-// Bold, colorful, modern. Override per event as needed.
+// PADLET THEME
+// Warm beige board, white cards, colorful top-strips.
+// Light, clean, festive — inspired by Padlet.
 // ============================================================
 
-export const NEO_MEMPHIS_THEME: EventTheme = {
-  "--color-primary":    "#FF3D5A",   // hot coral-red
-  "--color-secondary":  "#FFD600",   // electric yellow
-  "--color-accent":     "#00E5FF",   // cyan
-  "--color-accent2":    "#7C3AED",   // violet
-  "--color-bg":         "#0A0A0F",   // near-black
-  "--color-surface":    "#16161F",   // dark card bg
-  "--color-surface2":   "#1E1E2A",   // slightly lighter surface
-  "--color-text":       "#F5F5F5",
-  "--color-text-muted": "#888899",
-  "--font-display":     "'Bebas Neue', sans-serif",
-  "--font-body":        "'Plus Jakarta Sans', sans-serif",
+export const PADLET_THEME: EventTheme = {
+  "--color-primary":    "#f06292",   // pink — CTA buttons, highlights
+  "--color-secondary":  "#4f8ef7",   // blue — accents, links
+  "--color-accent":     "#34c072",   // green
+  "--color-accent2":    "#7c5de8",   // violet
+  "--color-bg":         "#f0ebe3",   // warm beige board
+  "--color-surface":    "#ffffff",   // white cards / sidebar
+  "--color-surface2":   "#f7f4ef",   // slightly off-white inputs
+  "--color-board-bg":   "#f0ebe3",   // board background alias
+  "--color-text":       "#1a1a2e",   // near-black
+  "--color-text-muted": "#9a96a8",   // muted gray
+  "--font-display":     "'Nunito', sans-serif",
+  "--font-body":        "'Nunito Sans', sans-serif",
 };
+
+// Card accent colors — cycled by index on the wall
+export const CARD_ACCENT_COLORS = [
+  { bg: "#fffbf0", strip: "#f5a623" }, // amber
+  { bg: "#f0f7ff", strip: "#4f8ef7" }, // blue
+  { bg: "#f0fff4", strip: "#34c072" }, // green
+  { bg: "#fff0f6", strip: "#f06292" }, // pink
+  { bg: "#f3f0ff", strip: "#7c5de8" }, // violet
+  { bg: "#f0fbff", strip: "#00bcd4" }, // cyan
+];
+
+export const AVATAR_COLORS = [
+  "#f06292", "#4f8ef7", "#34c072",
+  "#7c5de8", "#f5a623", "#00bcd4",
+];
 
 // ============================================================
 // EVENT CONFIGURATION
-// Edit this for each event
 // ============================================================
 
 export const EVENT_CONFIG: EventConfig = {
@@ -91,20 +108,15 @@ export const EVENT_CONFIG: EventConfig = {
   },
 
   // ── Wall ───────────────────────────────────────────────────
-  wallTitle:   "Muro dei Messaggi 💌",
-  wallSubtitle: "I tuoi auguri a Don Samuele",
+  wallTitle:         "Muro dei Messaggi 💌",
+  wallSubtitle:      "I tuoi auguri a Don Samuele",
   dedicaPlaceholder: "Scrivi il tuo messaggio a Don Samuele...",
 
   // ── Theme ─────────────────────────────────────────────────
-  // Using default Neo-Memphis. To customize for this event,
-  // replace with a custom theme object.
-  theme: NEO_MEMPHIS_THEME,
+  theme: PADLET_THEME,
 
   // ── Questions ─────────────────────────────────────────────
-  // Fill in 10 questions. Each has 4 options, one correct (index 0-3).
-  // `curiosita` is shown after the user answers — make it warm/funny.
   questions: [
-    // PLACEHOLDER — replace with real questions about Don Samuele
     {
       id: 1,
       testo: "In quale città è cresciuto Don Samuele?",
@@ -127,12 +139,5 @@ export const EVENT_CONFIG: EventConfig = {
       curiosita: "Oggi stesso — un giorno da ricordare! 🎉",
     },
     // ── ADD 7 MORE QUESTIONS HERE ──────────────────────────
-    // {
-    //   id: 4,
-    //   testo: "...",
-    //   opzioni: ["A", "B", "C", "D"],
-    //   corretta: 0,
-    //   curiosita: "..."
-    // },
   ],
 };
