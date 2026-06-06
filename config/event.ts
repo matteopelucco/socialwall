@@ -43,6 +43,8 @@ export type EventConfig = {
   wallTitle: string;
   wallSubtitle: string;
   dedicaPlaceholder: string;
+  scoreNudgeText: string;
+  dedicaHeaderText: string;
   qrInviteText: string;
   timeMessages: Record<number, string>;
   theme: EventTheme;
@@ -113,6 +115,8 @@ export const EVENT_CONFIG: EventConfig = {
   wallTitle:         "Muro dei Messaggi 💌",
   wallSubtitle:      "I tuoi auguri a Don Samuele",
   dedicaPlaceholder: "Scrivi il tuo messaggio a Don Samuele...",
+  scoreNudgeText:    "I messaggi di oggi verranno raccolti e consegnati a Don Samuele come ricordo della sua Prima Messa. Basta una riga ✍️",
+  dedicaHeaderText:  "Don Samuele leggerà ogni messaggio. Sarà il suo ricordo di questo giorno.",
   qrInviteText:      "Scansiona e partecipa al quiz!",
 
   // ── Time feedback (keyed by max seconds, ascending) ────────
@@ -139,7 +143,7 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 2,
       testo: "Qual è il cognome di Don Samuele?",
-      opzioni: ["Rossi", "Brancè", "Ferrari", "Colombo"],
+      opzioni: ["Branche", "Brancè", "Branciè", "Giuliani"],
       corretta: 1,
       curiosita: "Brancè — un cognome unico come lui! 😄",
     },

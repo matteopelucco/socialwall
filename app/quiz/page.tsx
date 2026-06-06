@@ -347,9 +347,19 @@ function ScoreScreen({
           </div>
         )}
 
+        {/* Nudge */}
+        {dedicaEnabled && (
+          <div className="padlet-card card-green p-4 mb-3" style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📖</span>
+            <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0, lineHeight: 1.6 }}>
+              {EVENT_CONFIG.scoreNudgeText}
+            </p>
+          </div>
+        )}
+
         {dedicaEnabled ? (
           <button className="btn-primary w-full text-lg py-4" onClick={onContinue}>
-            Lascia un messaggio 💌
+            Scrivi il tuo messaggio 💌
           </button>
         ) : (
           <div className="padlet-card card-amber p-4 text-center">
@@ -425,7 +435,7 @@ function DedicaForm({
             {EVENT_CONFIG.wallTitle}
           </h2>
           <p style={{ fontSize: 13, color: "var(--color-text-muted)", margin: 0 }}>
-            Il tuo messaggio apparirà sul muro in tempo reale ✨
+            {EVENT_CONFIG.dedicaHeaderText}
           </p>
         </div>
 
