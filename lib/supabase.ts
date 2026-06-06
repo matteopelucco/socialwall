@@ -39,7 +39,7 @@ export const supabase = new Proxy({} as ReturnType<typeof getSupabaseClient>, {
 
 // ── Typed helpers ─────────────────────────────────────────────
 
-import type { Session, Dedica, TypingStatus, LeaderboardEntry } from "./types";
+import type { Session, Dedica, DedicaWithSession, TypingStatus, LeaderboardEntry } from "./types";
 
 export async function createSession(
   nome: string,
@@ -135,6 +135,15 @@ export async function getAllDediche(): Promise<Dedica[]> {
   return data ?? [];
 }
 
+export async function getAllDedicheWithSessions(): Promise<DedicaWithSession[]> {
+  const { data, error } = await supabase
+    .from("dediche")
+    .select("*, sessions(id, nome, punteggio, totale_domande, tempo_secondi)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as DedicaWithSession[];
+}
+
 export async function updateDedica(id: string, testo: string): Promise<void> {
   const { error } = await supabase
     .from("dediche")
@@ -148,5 +157,21 @@ export async function deleteDedica(id: string): Promise<void> {
     .from("dediche")
     .delete()
     .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteSession(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("sessions")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteAllSessions(): Promise<void> {
+  const { error } = await supabase
+    .from("sessions")
+    .delete()
+    .not("id", "is", null);
   if (error) throw error;
 }

@@ -33,6 +33,10 @@ export type LeaderboardEntry = {
   created_at: string;
 };
 
+export type DedicaWithSession = Dedica & {
+  sessions: Pick<Session, "id" | "nome" | "punteggio" | "totale_domande" | "tempo_secondi"> | null;
+};
+
 // Quiz state machine
 export type QuizPhase =
   | "welcome"
