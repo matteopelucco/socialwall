@@ -12,9 +12,19 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Pick N random questions from pool */
+/** Shuffle the options of a question, updating corretta to match */
+function shuffleQuestionOptions(q: Question): Question {
+  const order = shuffle([0, 1, 2, 3] as const);
+  return {
+    ...q,
+    opzioni: order.map((i) => q.opzioni[i]) as [string, string, string, string],
+    corretta: order.indexOf(q.corretta) as 0 | 1 | 2 | 3,
+  };
+}
+
+/** Pick N random questions from pool, each with shuffled options */
 export function pickQuestions(pool: Question[], n: number): Question[] {
-  return shuffle(pool).slice(0, Math.min(n, pool.length));
+  return shuffle(pool).slice(0, Math.min(n, pool.length)).map(shuffleQuestionOptions);
 }
 
 /** Format a date string to Italian locale */
