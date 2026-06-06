@@ -240,12 +240,14 @@ function ScoreScreen({
   questions,
   answers,
   onContinue,
+  dedicaEnabled,
 }: {
   score: number;
   total: number;
   questions: Question[];
   answers: (number | null)[];
   onContinue: () => void;
+  dedicaEnabled: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
   const message = getScoreMessage(score, EVENT_CONFIG.scoreMessages);
@@ -311,9 +313,18 @@ function ScoreScreen({
           </div>
         )}
 
-        <button className="btn-primary w-full text-lg py-4" onClick={onContinue}>
-          Lascia un messaggio 💌
-        </button>
+        {dedicaEnabled ? (
+          <button className="btn-primary w-full text-lg py-4" onClick={onContinue}>
+            Lascia un messaggio 💌
+          </button>
+        ) : (
+          <div className="padlet-card card-amber p-4 text-center">
+            <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
+              📺 Il muro è momentaneamente chiuso.
+              Il tuo punteggio è stato registrato in classifica!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -487,6 +498,8 @@ function ThankYouScreen() {
 
 // ── Main Quiz Page ─────────────────────────────────────────────────
 
+const dedicaEnabled = process.env.NEXT_PUBLIC_DEDICA_ENABLED !== "false";
+
 export default function QuizPage() {
   const [phase, setPhase] = useState<QuizPhase>("welcome");
   const [userName, setUserName] = useState("");
@@ -555,7 +568,8 @@ export default function QuizPage() {
         total={questions.length}
         questions={questions}
         answers={answers}
-        onContinue={() => setPhase("dedica")}
+        onContinue={() => setPhase(dedicaEnabled ? "dedica" : "thankyou")}
+        dedicaEnabled={dedicaEnabled}
       />
     );
   if (phase === "dedica")
