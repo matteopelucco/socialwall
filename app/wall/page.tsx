@@ -68,8 +68,7 @@ function DedicaCard({ dedica, index, isNew }: { dedica: Dedica; index: number; i
 
   return (
     <div
-      className={`padlet-card ${cardClass} animate-card-in mb-3`}
-      style={{ animationDelay: `${Math.min(index, 8) * 0.06}s` }}
+      className={`padlet-card ${cardClass}${isNew ? " animate-card-in" : ""}`}
     >
       {isNew && <span className="badge-new">Nuovo ✨</span>}
       <div className="p-4">
@@ -516,9 +515,11 @@ export default function WallPage() {
     const step = (ts: number) => {
       if (lastTs && !scrollPausedRef.current) {
         const dy = SPEED * (ts - lastTs) / 1000;
-        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 4) {
-          el.scrollTop = 0; // instant loop back to top
-        } else {
+        const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 60;
+        const hasRoom = el.scrollHeight > el.clientHeight + 80;
+        if (atBottom && hasRoom) {
+          el.scrollTop = 0; // loop back to top
+        } else if (hasRoom) {
           el.scrollTop += dy;
         }
       }
@@ -557,7 +558,7 @@ export default function WallPage() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            columnGap: "12px",
+            gap: "12px",
             alignItems: "start",
             alignContent: "start",
             minHeight: 0,
