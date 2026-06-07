@@ -191,10 +191,10 @@ export const EVENT_CONFIG: EventConfig = {
     },
     {
       id: 9,
-      testo: "Come si chiama il papà di Don Samuele?",
-      opzioni: ["Giacomo", "Salvatore", "Marco", "Silvio"],
-      corretta: 3,
-      curiosita: "Silvio! Evviva i papà! 👨‍🦳",
+      testo: "In quali parrocchie è stato Don Samuele durante il Seminario (conta l'ordine!)",
+      opzioni: ["Somma Lombardo -> Villasanta -> Policlinico -> Cesano Maderno", "Villasanta -> Somma Lombardo -> Policlinico -> Cesano Maderno", "Venegono -> Villasanta -> Cesano Maderno", "Somma Lombardo -> Cesano Maderno -> Villasanta -> Venegono"],
+      corretta: 0,
+      curiosita: "Ma prima di tutto.. anni e anni come chierichietto a Mesenzana! ⛪",
     },
     {
       id: 10,
