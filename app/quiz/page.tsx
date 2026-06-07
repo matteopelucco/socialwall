@@ -29,10 +29,13 @@ function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
     <div className="quiz-container">
       <div className="w-full max-w-sm animate-slide-up">
         {/* Header card */}
-        <div
-          className="padlet-card card-pink mb-6 p-6 text-center"
-        >
-          <div style={{ fontSize: 48, marginBottom: 8 }}>🎉</div>
+        <div className="padlet-card card-pink mb-6 p-6 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="Don Samuele"
+            style={{ width: 120, height: 120, objectFit: "contain", margin: "0 auto 12px", display: "block" }}
+          />
           <h1
             style={{
               fontFamily: "var(--font-display)",
