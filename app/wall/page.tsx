@@ -15,10 +15,11 @@ import type { Dedica, LeaderboardEntry, TypingStatus } from "@/lib/types";
 
 // ── Audio ──────────────────────────────────────────────────────────
 
-function playDing() {
+async function playDing() {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AudioCtx();
+    await ctx.resume(); // required by browser autoplay policy
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -551,26 +552,23 @@ export default function WallPage() {
           <Sidebar entries={leaderboard} total={total} />
         </div>
 
-        {/* Dedica feed — 3-column CSS grid, vertical overflow */}
+        {/* Dedica feed — 3 explicit flex columns, vertical overflow */}
         <div
           ref={feedRef}
           className="flex-1 no-scrollbar overflow-y-auto board-bg p-4"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "12px",
-            alignItems: "start",
-            alignContent: "start",
-            minHeight: 0,
-          }}
+          style={{ display: "flex", gap: "12px", alignItems: "flex-start", minHeight: 0 }}
         >
           {dediche.length === 0 ? (
-            <div style={{ gridColumn: "1 / -1" }}>
-              <EmptyState />
-            </div>
+            <EmptyState />
           ) : (
-            dediche.map((d, i) => (
-              <DedicaCard key={d.id} dedica={d} index={i} isNew={newIds.has(d.id)} />
+            [0, 1, 2].map((col) => (
+              <div key={col} style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+                {dediche
+                  .filter((_, i) => i % 3 === col)
+                  .map((d, i) => (
+                    <DedicaCard key={d.id} dedica={d} index={col * 100 + i} isNew={newIds.has(d.id)} />
+                  ))}
+              </div>
             ))
           )}
         </div>
