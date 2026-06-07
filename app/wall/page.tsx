@@ -89,6 +89,11 @@ function DedicaCard({ dedica, index }: { dedica: Dedica; index: number }) {
 
 // ── Sidebar ────────────────────────────────────────────────────────
 
+const QR_ANIMS = [
+  "qr-pulse", "qr-wiggle", "qr-bounce", "qr-glow", "qr-float",
+  "qr-tilt",  "qr-shake",  "qr-breathe","qr-swing","qr-pop",
+];
+
 function Sidebar({
   entries,
   total,
@@ -97,6 +102,21 @@ function Sidebar({
   total: number;
 }) {
   const medals = ["🥇", "🥈", "🥉"];
+  const lastAnimIdx = useRef<number>(-1);
+  const [qrAnim, setQrAnim] = useState<string>("");
+
+  useEffect(() => {
+    const trigger = () => {
+      let next: number;
+      do { next = Math.floor(Math.random() * QR_ANIMS.length); }
+      while (next === lastAnimIdx.current);
+      lastAnimIdx.current = next;
+      setQrAnim(QR_ANIMS[next]);
+    };
+    const t0 = setTimeout(trigger, 3000);
+    const iv = setInterval(trigger, 10000);
+    return () => { clearTimeout(t0); clearInterval(iv); };
+  }, []);
 
   return (
     <div
@@ -225,6 +245,8 @@ function Sidebar({
         <img
           src="/qr.png"
           alt="QR code"
+          className={qrAnim}
+          onAnimationEnd={() => setQrAnim("")}
           style={{ width: "100%", maxWidth: 160, height: "auto", borderRadius: 8, margin: "0 auto", display: "block" }}
         />
       </div>
