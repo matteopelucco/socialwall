@@ -438,10 +438,11 @@ export default function WallPage() {
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [lastJoiner, setLastJoiner] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
+  const scrollPausedRef = useRef(false);
 
   const load = useCallback(async () => {
     const [d, lb, t, ty] = await Promise.all([
-      getRecentDediche(200),
+      getRecentDediche(500),
       getLeaderboard(),
       getTotalParticipants(),
       getActiveTyping(),
@@ -463,6 +464,10 @@ export default function WallPage() {
         playDing();
         setNewIds((prev) => new Set([...prev, d.id]));
         setTimeout(() => setNewIds((prev) => { const n = new Set(prev); n.delete(d.id); return n; }), 20000);
+        // Pause scroll, jump to top so badge is visible
+        scrollPausedRef.current = true;
+        feedRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => { scrollPausedRef.current = false; }, 8000);
       })
       .subscribe();
 
@@ -500,19 +505,29 @@ export default function WallPage() {
     };
   }, [load]);
 
-  // Auto-scroll feed
+  // Continuous auto-scroll via RAF — 45px/s, loops back to top, pauses on new message
   useEffect(() => {
-    if (!feedRef.current) return;
     const el = feedRef.current;
-    const scroll = setInterval(() => {
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
-        el.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ top: 300, behavior: "smooth" });
+    if (!el) return;
+    let lastTs = 0;
+    let rafId: number;
+    const SPEED = 45; // px per second
+
+    const step = (ts: number) => {
+      if (lastTs && !scrollPausedRef.current) {
+        const dy = SPEED * (ts - lastTs) / 1000;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 4) {
+          el.scrollTop = 0; // instant loop back to top
+        } else {
+          el.scrollTop += dy;
+        }
       }
-    }, 4000);
-    return () => clearInterval(scroll);
-  }, [dediche]);
+      lastTs = ts;
+      rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, []); // runs once — scroll state lives in refs
 
   return (
     <div
