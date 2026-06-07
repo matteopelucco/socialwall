@@ -38,11 +38,12 @@ body {
 body::before {
   content: '';
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 75vh;
-  height: 75vh;
-  background: url('/logo.png') no-repeat bottom left / contain;
+  right: -4%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(88vh, 88vw);
+  height: min(88vh, 88vw);
+  background: url('/logo.png') no-repeat center / contain;
   opacity: 0.08;
   pointer-events: none;
   z-index: 0;
