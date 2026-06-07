@@ -271,6 +271,37 @@ body::before {
 .qr-swing   { animation: qr-swing   1.0s ease-in-out; transform-origin: top center; }
 .qr-pop     { animation: qr-pop     0.75s cubic-bezier(0.34,1.56,0.64,1); }
 
+/* ── "Nuovo" badge on fresh dedica cards ── */
+@keyframes badge-live {
+  0%, 82% { opacity: 1; transform: scale(1); }
+  100%    { opacity: 0; transform: scale(0.7); }
+}
+.badge-new {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 100px;
+  animation: badge-live 20s ease-in-out forwards;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Joiner toast (new participant banner) ── */
+@keyframes joiner-slide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.joiner-toast {
+  animation: joiner-slide 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
 /* ── Scrollbar hide ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

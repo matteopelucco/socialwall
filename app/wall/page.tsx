@@ -13,6 +13,26 @@ import {
 import { timeAgo, formatTime } from "@/lib/utils";
 import type { Dedica, LeaderboardEntry, TypingStatus } from "@/lib/types";
 
+// ── Audio ──────────────────────────────────────────────────────────
+
+function playDing() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.1);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 1.1);
+  } catch { /* no-op if audio unavailable */ }
+}
+
 // ── Helpers ────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {
@@ -41,7 +61,7 @@ const CARD_CLASSES = [
 
 // ── DedicaCard ─────────────────────────────────────────────────────
 
-function DedicaCard({ dedica, index }: { dedica: Dedica; index: number }) {
+function DedicaCard({ dedica, index, isNew }: { dedica: Dedica; index: number; isNew: boolean }) {
   const cardClass = CARD_CLASSES[index % CARD_CLASSES.length];
   const avatarColor = AVATAR_COLORS[getColorIndex(dedica.nome_firma)];
   const initials = getInitials(dedica.nome_firma);
@@ -51,6 +71,7 @@ function DedicaCard({ dedica, index }: { dedica: Dedica; index: number }) {
       className={`padlet-card ${cardClass} animate-card-in mb-3`}
       style={{ animationDelay: `${Math.min(index, 8) * 0.06}s` }}
     >
+      {isNew && <span className="badge-new">Nuovo ✨</span>}
       <div className="p-4">
         <p
           className="text-sm leading-relaxed mb-3"
@@ -284,6 +305,29 @@ function TypingBanner({ typers }: { typers: TypingStatus[] }) {
   );
 }
 
+// ── Joiner Toast ───────────────────────────────────────────────────
+
+function JoinerToast({ name }: { name: string }) {
+  return (
+    <div
+      key={name + Date.now()}
+      className="joiner-toast flex items-center gap-3 px-5 py-2"
+      style={{
+        background: "rgba(52,192,114,0.08)",
+        borderBottom: "1px solid rgba(52,192,114,0.2)",
+        fontSize: 13,
+        color: "var(--color-text)",
+      }}
+    >
+      <span style={{ fontSize: 18 }}>🎉</span>
+      <span>
+        <strong style={{ fontWeight: 800 }}>{name}</strong>
+        {" "}ha appena completato il quiz!
+      </span>
+    </div>
+  );
+}
+
 // ── Wall Header ────────────────────────────────────────────────────
 
 function WallHeader({ total }: { total: number }) {
@@ -391,11 +435,13 @@ export default function WallPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [typers, setTypers] = useState<TypingStatus[]>([]);
+  const [newIds, setNewIds] = useState<Set<string>>(new Set());
+  const [lastJoiner, setLastJoiner] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     const [d, lb, t, ty] = await Promise.all([
-      getRecentDediche(100),
+      getRecentDediche(200),
       getLeaderboard(),
       getTotalParticipants(),
       getActiveTyping(),
@@ -412,7 +458,11 @@ export default function WallPage() {
     const dedicaChannel = supabase
       .channel("wall-dediche")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "dediche" }, (payload) => {
-        setDediche((prev) => [payload.new as Dedica, ...prev]);
+        const d = payload.new as Dedica;
+        setDediche((prev) => [d, ...prev]);
+        playDing();
+        setNewIds((prev) => new Set([...prev, d.id]));
+        setTimeout(() => setNewIds((prev) => { const n = new Set(prev); n.delete(d.id); return n; }), 20000);
       })
       .subscribe();
 
@@ -425,9 +475,12 @@ export default function WallPage() {
 
     const sessionChannel = supabase
       .channel("wall-sessions")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "sessions" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "sessions" }, (payload) => {
         getLeaderboard().then(setLeaderboard);
         getTotalParticipants().then(setTotal);
+        const nome = (payload.new as { nome: string }).nome;
+        setLastJoiner(nome);
+        setTimeout(() => setLastJoiner(null), 5000);
       })
       .subscribe();
 
@@ -472,6 +525,9 @@ export default function WallPage() {
       {/* Typing banner — full width */}
       <TypingBanner typers={typers} />
 
+      {/* Joiner toast — full width, auto-dismiss */}
+      {lastJoiner && <JoinerToast name={lastJoiner} />}
+
       {/* Body: sidebar + feed */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
@@ -491,7 +547,7 @@ export default function WallPage() {
             </div>
           ) : (
             dediche.map((d, i) => (
-              <DedicaCard key={d.id} dedica={d} index={i} />
+              <DedicaCard key={d.id} dedica={d} index={i} isNew={newIds.has(d.id)} />
             ))
           )}
         </div>

@@ -136,7 +136,7 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 1,
       testo: "In quale città è cresciuto Don Samuele?",
-      opzioni: ["Milano", "Varese", "Mesenzana", "Luino"],
+      opzioni: ["Milano", "Varese", "Mesenzana", "Venegono Inferiore"],
       corretta: 2,
       curiosita: "Mesenzana è sempre stata la sua casa ❤️",
     },
@@ -164,7 +164,7 @@ export const EVENT_CONFIG: EventConfig = {
     {
       id: 5,
       testo: "Come chiamava l'acqua da piccolo?",
-      opzioni: ["Acaa", "Glù Glù", "Dlà Dlà", "Tentazione nel deserto"],
+      opzioni: ["Acaa", "Glù Glù", "Dlà Dlà", "Scià Scià"],
       corretta: 2,
       curiosita: "\"Dlà Dlà\" — una parola talmente bella che quasi dispiace non averla adottata tutti 💧",
     },
