@@ -14,12 +14,28 @@ import { timeAgo, formatTime } from "@/lib/utils";
 import type { Dedica, LeaderboardEntry, TypingStatus } from "@/lib/types";
 
 // ── Audio ──────────────────────────────────────────────────────────
+// Singleton context — created once, unlocked on first user gesture.
 
-async function playDing() {
+let _audioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  if (!_audioCtx) {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (AC) _audioCtx = new AC();
+  }
+  return _audioCtx;
+}
+
+function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx?.state === "suspended") ctx.resume();
+}
+
+function playDing() {
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AudioCtx();
-    await ctx.resume(); // required by browser autoplay policy
+    const ctx = getAudioCtx();
+    if (!ctx || ctx.state !== "running") return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -31,7 +47,7 @@ async function playDing() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.1);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 1.1);
-  } catch { /* no-op if audio unavailable */ }
+  } catch { /* no-op */ }
 }
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -62,45 +78,41 @@ const CARD_CLASSES = [
 
 // ── DedicaCard ─────────────────────────────────────────────────────
 
-function DedicaCard({ dedica, index, isNew }: { dedica: Dedica; index: number; isNew: boolean }) {
-  const cardClass = CARD_CLASSES[index % CARD_CLASSES.length];
+function DedicaCard({ dedica, index, isNew, badgeDuration, msgNum }: {
+  dedica: Dedica; index: number; isNew: boolean; badgeDuration?: number; msgNum: number;
+}) {
+  const colorIdx = index % CARD_CLASSES.length;
+  const cardClass = CARD_CLASSES[colorIdx];
+  const stripColor = CARD_ACCENT_COLORS[colorIdx].strip;
   const avatarColor = AVATAR_COLORS[getColorIndex(dedica.nome_firma)];
   const initials = getInitials(dedica.nome_firma);
 
   return (
-    <div
-      className={`padlet-card ${cardClass}${isNew ? " animate-card-in" : ""}`}
-    >
-      {isNew && <span className="badge-new">Nuovo ✨</span>}
-      <div className="p-4">
-        <p
-          className="text-sm leading-relaxed mb-3"
-          style={{
-            color: "var(--color-text)",
-            fontFamily: "var(--font-body)",
-            lineHeight: 1.65,
-          }}
+    <div className={`padlet-card ${cardClass}${isNew ? " animate-card-in" : ""}`}>
+      {isNew && badgeDuration && (
+        <span
+          className="badge-new"
+          style={{ background: stripColor, animationDuration: `${badgeDuration / 1000}s` }}
         >
-          "{dedica.testo}"
+          Nuovo ✨
+        </span>
+      )}
+      <div className="p-4">
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--color-text)", fontFamily: "var(--font-body)", lineHeight: 1.65 }}>
+          &ldquo;{dedica.testo}&rdquo;
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="avatar" style={{ background: avatarColor, width: 28, height: 28, fontSize: 11 }}>
               {initials}
             </div>
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-                fontSize: 13,
-                color: "var(--color-text)",
-              }}
-            >
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13, color: "var(--color-text)" }}>
               {dedica.nome_firma}
             </span>
           </div>
           <span style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
-            {timeAgo(dedica.created_at)}
+            {timeAgo(dedica.created_at)}{" "}
+            <span style={{ opacity: 0.55 }}>(#{msgNum})</span>
           </span>
         </div>
       </div>
@@ -435,7 +447,7 @@ export default function WallPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [typers, setTypers] = useState<TypingStatus[]>([]);
-  const [newIds, setNewIds] = useState<Set<string>>(new Set());
+  const [newIds, setNewIds] = useState<Map<string, number>>(new Map());
   const [lastJoiner, setLastJoiner] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const scrollPausedRef = useRef(false);
@@ -453,6 +465,16 @@ export default function WallPage() {
     setTypers(ty);
   }, []);
 
+  // Unlock AudioContext on first user interaction
+  useEffect(() => {
+    document.addEventListener("click", unlockAudio, { once: true });
+    document.addEventListener("touchstart", unlockAudio, { once: true });
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+  }, []);
+
   useEffect(() => {
     load();
 
@@ -462,8 +484,9 @@ export default function WallPage() {
         const d = payload.new as Dedica;
         setDediche((prev) => [d, ...prev]);
         playDing();
-        setNewIds((prev) => new Set([...prev, d.id]));
-        setTimeout(() => setNewIds((prev) => { const n = new Set(prev); n.delete(d.id); return n; }), 20000);
+        const dur = 20000 + Math.random() * 20000; // 20–40s
+        setNewIds((prev) => new Map([...prev, [d.id, dur]]));
+        setTimeout(() => setNewIds((prev) => { const n = new Map(prev); n.delete(d.id); return n; }), dur);
         // Pause scroll, jump to top so badge is visible
         scrollPausedRef.current = true;
         feedRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -565,9 +588,14 @@ export default function WallPage() {
               <div key={col} style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
                 {dediche
                   .filter((_, i) => i % 3 === col)
-                  .map((d, i) => (
-                    <DedicaCard key={d.id} dedica={d} index={col * 100 + i} isNew={newIds.has(d.id)} />
-                  ))}
+                  .map((d, colI) => {
+                    const globalIdx = colI * 3 + col;
+                    return (
+                      <DedicaCard key={d.id} dedica={d} index={col * 100 + colI}
+                        isNew={newIds.has(d.id)} badgeDuration={newIds.get(d.id)}
+                        msgNum={dediche.length - globalIdx} />
+                    );
+                  })}
               </div>
             ))
           )}
