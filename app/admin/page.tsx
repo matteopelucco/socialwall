@@ -90,7 +90,7 @@ function LoginScreen({ onLogin }: { onLogin: (pw: string) => boolean }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="padlet-card card-violet p-8" style={{ width: "100%", maxWidth: 360 }}>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 900, color: "var(--color-text)", margin: "0 0 4px" }}>
           🛡️ Admin
@@ -329,7 +329,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-bg)", fontFamily: "var(--font-body)" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "var(--font-body)" }}>
       {/* Sticky header */}
       <div style={{
         background: "var(--color-surface)",

@@ -275,6 +275,8 @@ function WallHeader({ total }: { total: number }) {
       }}
     >
       <div className="flex items-center gap-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="" style={{ height: 42, width: 42, objectFit: "contain", flexShrink: 0 }} />
         <h1
           style={{
             fontFamily: "var(--font-display)",
@@ -440,7 +442,7 @@ export default function WallPage() {
   return (
     <div
       className="h-screen overflow-hidden flex flex-col"
-      style={{ fontFamily: "var(--font-body)", background: "var(--color-surface)" }}
+      style={{ fontFamily: "var(--font-body)" }}
     >
       {/* Header — full width */}
       <WallHeader total={total} />
