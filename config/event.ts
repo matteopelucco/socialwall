@@ -93,7 +93,7 @@ export const AVATAR_COLORS = [
 
 export const EVENT_CONFIG: EventConfig = {
   // ── Identity ───────────────────────────────────────────────
-  eventName:     "Festa di Don Samuele",
+  eventName:     "Tu sei DONo per Tutti",
   eventDate:     "14 Giugno 2026",
   eventSubtitle: "Prima Santa Messa · Mesenzana",
   honoree:       "Don Samuele",
