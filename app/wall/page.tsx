@@ -550,14 +550,21 @@ export default function WallPage() {
           <Sidebar entries={leaderboard} total={total} />
         </div>
 
-        {/* Dedica feed — masonry columns */}
+        {/* Dedica feed — 3-column CSS grid, vertical overflow */}
         <div
           ref={feedRef}
           className="flex-1 no-scrollbar overflow-y-auto board-bg p-4"
-          style={{ columnCount: 3, columnGap: "12px" }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            columnGap: "12px",
+            alignItems: "start",
+            alignContent: "start",
+            minHeight: 0,
+          }}
         >
           {dediche.length === 0 ? (
-            <div style={{ columnSpan: "all" }}>
+            <div style={{ gridColumn: "1 / -1" }}>
               <EmptyState />
             </div>
           ) : (
