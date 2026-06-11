@@ -434,10 +434,10 @@ function DedicaForm({
                 margin: "0 0 2px",
               }}
             >
-              ⏱ Questo è il tuo tempo!
+              ⏱ Hai fermato il cronometro!
             </p>
             <p style={{ fontSize: 12, color: "var(--color-text-muted)", margin: 0 }}>
-              Ti manca solo sapere il punteggio.. ma scrivi prima il tuo messaggio!
+              Ma che punteggio avrai fatto? Scrivi il tuo messaggio per Don Samuele e scoprirai il tuo posto in classifica!
             </p>
           </div>
           <span
