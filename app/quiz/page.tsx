@@ -258,16 +258,12 @@ function ScoreScreen({
   total,
   questions,
   answers,
-  onContinue,
-  dedicaEnabled,
   tempoSecondi,
 }: {
   score: number;
   total: number;
   questions: Question[];
   answers: (number | null)[];
-  onContinue: () => void;
-  dedicaEnabled: boolean;
   tempoSecondi: number;
 }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -279,6 +275,14 @@ function ScoreScreen({
   return (
     <div className="quiz-container">
       <div className="w-full max-w-sm animate-pop">
+        {/* Message sent confirmation */}
+        <div className="padlet-card card-green p-4 mb-4 flex items-center gap-3">
+          <span style={{ fontSize: 22, flexShrink: 0 }}>💌</span>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)", margin: 0 }}>
+            Messaggio inviato! {EVENT_CONFIG.honoree} lo riceverà oggi.
+          </p>
+        </div>
+
         <div className={`padlet-card ${cardClass} p-8 text-center mb-4`}>
           <div
             style={{
@@ -350,28 +354,11 @@ function ScoreScreen({
           </div>
         )}
 
-        {/* Nudge */}
-        {dedicaEnabled && (
-          <div className="padlet-card card-green p-4 mb-3" style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📖</span>
-            <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0, lineHeight: 1.6 }}>
-              {EVENT_CONFIG.scoreNudgeText}
-            </p>
-          </div>
-        )}
-
-        {dedicaEnabled ? (
-          <button className="btn-primary w-full text-lg py-4" onClick={onContinue}>
-            Scrivi il tuo messaggio 💌
-          </button>
-        ) : (
-          <div className="padlet-card card-amber p-4 text-center">
-            <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
-              📺 Il muro è momentaneamente chiuso.
-              Il tuo punteggio è stato registrato in classifica!
-            </p>
-          </div>
-        )}
+        <div className="padlet-card card-blue p-4 text-center">
+          <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
+            📺 Cerca il tuo nome sul grande schermo!
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -382,10 +369,14 @@ function ScoreScreen({
 function DedicaForm({
   defaultName,
   sessionId,
+  finalTime,
+  minChars,
   onSubmit,
 }: {
   defaultName: string;
   sessionId: string;
+  finalTime: number;
+  minChars: number;
   onSubmit: () => void;
 }) {
   const [testo, setTesto] = useState("");
@@ -405,7 +396,7 @@ function DedicaForm({
   }, [testo, sessionId, defaultName]);
 
   const handleSubmit = async () => {
-    if (!testo.trim()) return;
+    if (testo.trim().length < minChars) return;
     setLoading(true);
     try {
       await createDedica(sessionId, firma.trim() || defaultName, testo.trim());
@@ -419,17 +410,57 @@ function DedicaForm({
     }
   };
 
+  const trimmed = testo.trim();
+  const charsOk = trimmed.length >= minChars;
   const remaining = 300 - testo.length;
+  const stillNeeded = minChars - trimmed.length;
 
   return (
     <div className="quiz-container">
       <div className="w-full max-w-sm animate-slide-up">
+        {/* Timer stopped banner */}
+        <div
+          className="padlet-card card-cyan p-4 mb-4"
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
+        >
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#00bcd4",
+                margin: "0 0 2px",
+              }}
+            >
+              ⏱ Tempo fermato
+            </p>
+            <p style={{ fontSize: 12, color: "var(--color-text-muted)", margin: 0 }}>
+              Il cronometro si è bloccato. Scrivi il tuo messaggio!
+            </p>
+          </div>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 30,
+              fontWeight: 900,
+              color: "var(--color-text)",
+              letterSpacing: "0.04em",
+              flexShrink: 0,
+            }}
+          >
+            {formatTime(finalTime)}
+          </span>
+        </div>
+
+        {/* Header */}
         <div className="padlet-card card-violet p-5 mb-4 text-center">
-          <div style={{ fontSize: 36, marginBottom: 6 }}>💌</div>
+          <div style={{ fontSize: 32, marginBottom: 6 }}>💌</div>
           <h2
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: 900,
               color: "var(--color-text)",
               margin: "0 0 4px",
@@ -442,6 +473,7 @@ function DedicaForm({
           </p>
         </div>
 
+        {/* Message textarea */}
         <div className="padlet-card card-amber p-5 mb-3">
           <label
             style={{
@@ -464,18 +496,31 @@ function DedicaForm({
             className="input-padlet"
             style={{ resize: "none" }}
           />
-          <div
-            style={{
-              textAlign: "right",
-              fontSize: 11,
-              marginTop: 4,
-              color: remaining < 30 ? "var(--color-primary)" : "var(--color-text-muted)",
-            }}
-          >
-            {remaining} caratteri rimanenti
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+            {/* Unlock progress */}
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: charsOk ? "var(--color-accent)" : "var(--color-text-muted)",
+                transition: "color 0.2s",
+              }}
+            >
+              {charsOk ? "✓ Pronto!" : `Ancora ${stillNeeded} caratteri`}
+            </span>
+            {/* Char count */}
+            <span
+              style={{
+                fontSize: 11,
+                color: remaining < 30 ? "var(--color-primary)" : "var(--color-text-muted)",
+              }}
+            >
+              {remaining} rimanenti
+            </span>
           </div>
         </div>
 
+        {/* Signature */}
         <div className="padlet-card card-blue p-5 mb-5">
           <label
             style={{
@@ -501,9 +546,14 @@ function DedicaForm({
         <button
           className="btn-primary w-full text-lg py-4"
           onClick={handleSubmit}
-          disabled={!testo.trim() || loading}
+          disabled={!charsOk || loading}
+          style={{ opacity: charsOk ? 1 : 0.5, transition: "opacity 0.2s" }}
         >
-          {loading ? "Invio in corso..." : "Invia Messaggio 💌"}
+          {loading
+            ? "Invio in corso..."
+            : charsOk
+            ? "Scopri il tuo punteggio 🎯"
+            : `Scrivi almeno ${minChars} caratteri per continuare`}
         </button>
       </div>
     </div>
@@ -602,16 +652,22 @@ export default function QuizPage() {
           setAnswered(false);
           setSelectedIndex(null);
         } else {
-          // Stop timer and capture final time
+          // Stop timer immediately — this is the official quiz end time
           if (timerRef.current) clearInterval(timerRef.current);
           const elapsed = quizStartRef.current
             ? Math.floor((Date.now() - quizStartRef.current) / 1000)
             : 0;
           setFinalTime(elapsed);
-          createSession(userName, newScore, questions.length, elapsed).then((session) => {
-            setSessionId(session.id);
-          });
-          setPhase("score");
+          // Create session now (triggers wall "ha completato il quiz" message)
+          createSession(userName, newScore, questions.length, elapsed)
+            .then((session) => {
+              setSessionId(session.id);
+              setPhase(dedicaEnabled ? "dedica" : "score");
+            })
+            .catch(() => {
+              // If session creation fails, still advance
+              setPhase(dedicaEnabled ? "dedica" : "score");
+            });
         }
       }, 1800);
     },
@@ -631,6 +687,16 @@ export default function QuizPage() {
         elapsedDisplay={elapsedDisplay}
       />
     );
+  if (phase === "dedica")
+    return (
+      <DedicaForm
+        defaultName={userName}
+        sessionId={sessionId}
+        finalTime={finalTime}
+        minChars={EVENT_CONFIG.dedicaMinChars}
+        onSubmit={() => setPhase("score")}
+      />
+    );
   if (phase === "score")
     return (
       <ScoreScreen
@@ -638,17 +704,7 @@ export default function QuizPage() {
         total={questions.length}
         questions={questions}
         answers={answers}
-        onContinue={() => setPhase(dedicaEnabled ? "dedica" : "thankyou")}
-        dedicaEnabled={dedicaEnabled}
         tempoSecondi={finalTime}
-      />
-    );
-  if (phase === "dedica")
-    return (
-      <DedicaForm
-        defaultName={userName}
-        sessionId={sessionId}
-        onSubmit={() => setPhase("thankyou")}
       />
     );
   return <ThankYouScreen />;

@@ -39,6 +39,7 @@ export type EventConfig = {
   quizTitle: string;
   quizSubtitle: string;
   questionsPerSession: number;
+  dedicaMinChars: number;
   scoreMessages: ScoreMessages;
   wallTitle: string;
   wallSubtitle: string;
@@ -102,6 +103,7 @@ export const EVENT_CONFIG: EventConfig = {
   quizTitle:    "Quanto conosci Don Samuele?",
   quizSubtitle: "10 domande per scoprirlo (o riscoprirlo) 😄",
   questionsPerSession: 10,
+  dedicaMinChars: 10,
 
   scoreMessages: {
     10: "Sei il suo fan numero 1! 🏆",
