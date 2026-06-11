@@ -434,10 +434,10 @@ function DedicaForm({
                 margin: "0 0 2px",
               }}
             >
-              ⏱ Tempo fermato
+              ⏱ Questo è il tuo tempo!
             </p>
             <p style={{ fontSize: 12, color: "var(--color-text-muted)", margin: 0 }}>
-              Il cronometro si è bloccato. Scrivi il tuo messaggio!
+              Ti manca solo sapere il punteggio.. ma scrivi prima il tuo messaggio!
             </p>
           </div>
           <span
@@ -533,7 +533,7 @@ function DedicaForm({
               marginBottom: 8,
             }}
           >
-            Firma
+            Il tuo nome
           </label>
           <input
             type="text"
