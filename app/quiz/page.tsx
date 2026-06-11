@@ -34,7 +34,7 @@ function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
           <img
             src="/logo.png"
             alt="Don Samuele"
-            style={{ width: 120, height: 120, objectFit: "contain", margin: "0 auto 12px", display: "block" }}
+            style={{ width: 220, height: 220, objectFit: "contain", margin: "0 auto 12px", display: "block" }}
           />
           <h1
             style={{
