@@ -598,6 +598,11 @@ function ThankYouScreen() {
 const dedicaEnabled = process.env.NEXT_PUBLIC_DEDICA_ENABLED !== "false";
 
 export default function QuizPage() {
+  useEffect(() => {
+    document.body.style.overscrollBehaviorY = "none";
+    return () => { document.body.style.overscrollBehaviorY = ""; };
+  }, []);
+
   const [phase, setPhase] = useState<QuizPhase>("welcome");
   const [userName, setUserName] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
