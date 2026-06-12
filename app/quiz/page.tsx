@@ -228,22 +228,35 @@ function QuestionCard({
 
         {/* Fun fact */}
         {answered && question.curiosita && (
-          <div className="padlet-card card-cyan p-4 mt-4 animate-fade-in">
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "#00bcd4",
-                marginBottom: 4,
-              }}
-            >
-              Lo sapevi?
-            </p>
-            <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0 }}>
-              {question.curiosita}
-            </p>
+          <div className="padlet-card card-cyan mt-4 animate-fade-in" style={{ padding: 0 }}>
+            <div style={{ padding: "1rem" }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#00bcd4",
+                  marginBottom: 4,
+                }}
+              >
+                Lo sapevi?
+              </p>
+              <p style={{ fontSize: 13, color: "var(--color-text)", margin: 0 }}>
+                {question.curiosita}
+              </p>
+            </div>
+            {/* Countdown bar — matches 1800ms auto-advance timeout */}
+            <div style={{ height: 4, background: "rgba(0,188,212,0.15)" }}>
+              <div
+                style={{
+                  height: "100%",
+                  width: 0,
+                  background: "#00bcd4",
+                  animation: "quiz-countdown 1800ms linear forwards",
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
