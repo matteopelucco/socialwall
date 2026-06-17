@@ -28,6 +28,24 @@ function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
   return (
     <div className="quiz-container">
       <div className="w-full max-w-sm animate-slide-up">
+        {/* Offline-mode warning */}
+        {!dedicaEnabled && (
+          <div
+            className="padlet-card card-amber p-4 mb-4"
+            style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+          >
+            <span style={{ fontSize: 20, flexShrink: 0 }}>⚠️</span>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#f5a623", margin: "0 0 3px" }}>
+                Modalità demo
+              </p>
+              <p style={{ fontSize: 13, color: "var(--color-text-muted)", margin: 0, lineHeight: 1.4 }}>
+                Il sistema è temporaneamente disattivato. Puoi giocare e vedere le risposte, ma il punteggio non verrà registrato e non sarà possibile lasciare un messaggio.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header card */}
         <div className="padlet-card card-pink mb-6 p-6 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -371,11 +389,13 @@ function ScoreScreen({
           </div>
         )}
 
-        <div className="padlet-card card-blue p-4 text-center">
-          <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
-            📺 Cerca il tuo nome sul grande schermo!
-          </p>
-        </div>
+        {dedicaSent && (
+          <div className="padlet-card card-blue p-4 text-center">
+            <p style={{ fontSize: 14, color: "var(--color-text)", margin: 0 }}>
+              📺 Cerca il tuo nome sul grande schermo!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -681,16 +701,18 @@ export default function QuizPage() {
             ? Math.floor((Date.now() - quizStartRef.current) / 1000)
             : 0;
           setFinalTime(elapsed);
-          // Create session now (triggers wall "ha completato il quiz" message)
-          createSession(userName, newScore, questions.length, elapsed)
-            .then((session) => {
-              setSessionId(session.id);
-              setPhase(dedicaEnabled ? "dedica" : "score");
-            })
-            .catch(() => {
-              // If session creation fails, still advance
-              setPhase(dedicaEnabled ? "dedica" : "score");
-            });
+          if (!dedicaEnabled) {
+            setPhase("score");
+          } else {
+            createSession(userName, newScore, questions.length, elapsed)
+              .then((session) => {
+                setSessionId(session.id);
+                setPhase("dedica");
+              })
+              .catch(() => {
+                setPhase("dedica");
+              });
+          }
         }
       }, 1800);
     },
