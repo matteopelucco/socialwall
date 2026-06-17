@@ -272,12 +272,14 @@ function ScoreScreen({
   questions,
   answers,
   tempoSecondi,
+  dedicaSent,
 }: {
   score: number;
   total: number;
   questions: Question[];
   answers: (number | null)[];
   tempoSecondi: number;
+  dedicaSent: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
   const message = getScoreMessage(score, EVENT_CONFIG.scoreMessages);
@@ -288,13 +290,15 @@ function ScoreScreen({
   return (
     <div className="quiz-container">
       <div className="w-full max-w-sm animate-pop">
-        {/* Message sent confirmation */}
-        <div className="padlet-card card-green p-4 mb-4 flex items-center gap-3">
-          <span style={{ fontSize: 22, flexShrink: 0 }}>💌</span>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)", margin: 0 }}>
-            Messaggio inviato! {EVENT_CONFIG.honoree} lo riceverà oggi.
-          </p>
-        </div>
+        {/* Message sent confirmation — shown only when dedica was actually submitted */}
+        {dedicaSent && (
+          <div className="padlet-card card-green p-4 mb-4 flex items-center gap-3">
+            <span style={{ fontSize: 22, flexShrink: 0 }}>💌</span>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)", margin: 0 }}>
+              Messaggio inviato! {EVENT_CONFIG.honoree} lo riceverà oggi.
+            </p>
+          </div>
+        )}
 
         <div className={`padlet-card ${cardClass} p-8 text-center mb-4`}>
           <div
@@ -608,7 +612,7 @@ function ThankYouScreen() {
 
 // ── Main Quiz Page ─────────────────────────────────────────────────
 
-const dedicaEnabled = process.env.NEXT_PUBLIC_DEDICA_ENABLED !== "false";
+const dedicaEnabled = process.env.NEXT_PUBLIC_DEDICA_ENABLED?.toLowerCase() !== "false";
 
 export default function QuizPage() {
   useEffect(() => {
@@ -625,6 +629,7 @@ export default function QuizPage() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [sessionId, setSessionId] = useState("");
+  const [dedicaSent, setDedicaSent] = useState(false);
 
   // Timer
   const quizStartRef = useRef<number | null>(null);
@@ -712,7 +717,7 @@ export default function QuizPage() {
         sessionId={sessionId}
         finalTime={finalTime}
         minChars={EVENT_CONFIG.dedicaMinChars}
-        onSubmit={() => setPhase("score")}
+        onSubmit={() => { setDedicaSent(true); setPhase("score"); }}
       />
     );
   if (phase === "score")
@@ -723,6 +728,7 @@ export default function QuizPage() {
         questions={questions}
         answers={answers}
         tempoSecondi={finalTime}
+        dedicaSent={dedicaSent}
       />
     );
   return <ThankYouScreen />;
