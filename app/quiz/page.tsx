@@ -51,7 +51,7 @@ function WelcomeScreen({ onStart }: { onStart: (name: string) => void }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="Don Samuele"
+            alt="Don Fabio"
             style={{ width: 220, height: 220, objectFit: "contain", margin: "0 auto 12px", display: "block" }}
           />
           <h1
@@ -474,7 +474,7 @@ function DedicaForm({
               ⏱ Hai fermato il cronometro!
             </p>
             <p style={{ fontSize: 12, color: "var(--color-text-muted)", margin: 0 }}>
-              Ma che punteggio avrai fatto? Scrivi il tuo messaggio per Don Samuele e scoprirai il tuo posto in classifica!
+              Ma che punteggio avrai fatto? Scrivi il tuo messaggio per Don Fabio e scoprirai il tuo posto in classifica!
             </p>
           </div>
           <span
