@@ -94,7 +94,7 @@ export const AVATAR_COLORS = [
 
 export const EVENT_CONFIG: EventConfig = {
   // ── Identity ───────────────────────────────────────────────
-  eventName:     "Tu sei DONo per Tutti",
+  eventName:     "Saluto di don Fabio",
   eventDate:     "14 Giugno 2026",
   eventSubtitle: "Grazie, don Fabio!",
   honoree:       "Don Fabio",
@@ -203,7 +203,7 @@ export const EVENT_CONFIG: EventConfig = {
       testo: "Qual è il colore preferito di Don Fabio?",
       opzioni: ["Azzurro", "Verde", "Rosso", "Giallo"],
       corretta: 0,
-      curiosita: "Azzurro come il cielo... e chissà, forse anche un po' Inter 💙",
+      curiosita: "Azzurro come il cielo!",
     }
   ],
 };
